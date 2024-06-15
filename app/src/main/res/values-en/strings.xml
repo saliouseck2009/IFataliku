@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IFataliku</string>
+    <string name="home_page">Home</string>
+    <string name="my_souvenirs">My souvenir</string>
+    <string name="r_essayer">Retry</string>
+    <string name="retour">Back</string>
+    <string name="valider">Validate</string>
+    <string name="se_connecter">Sign In</string>
+    <string name="veillez_remplir_tous_les_champs">Please fill out all fields</string>
+    <string name="ajouter">Add</string>
+    <string name="nouveau_souvenir">New Souvenir</string>
+    <string name="category">Category</string>
+    <string name="how_do_you_feel">How do you feel?</string>
+    <string name="what_would_you_like_to_remember">What would you like to remember?</string>
+</resources>

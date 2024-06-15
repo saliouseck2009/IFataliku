@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">IFataliku</string>
+    <string name="home_page">Accueil</string>
+    <string name="my_souvenirs">My souvenirs</string>
+    <string name="r_essayer">Réessayer</string>
+    <string name="retour">Retour</string>
+    <string name="valider">Valider</string>
+    <string name="se_connecter">Se connecter</string>
+    <string name="veillez_remplir_tous_les_champs">Veillez remplir tous les champs</string>
+    <string name="ajouter">Ajouter</string>
+    <string name="nouveau_souvenir">Nouveau Souvenir</string>
+    <string name="category">Categorie</string>
+    <string name="how_do_you_feel">Comment vous sentez-vous?</string>
+    <string name="what_would_you_like_to_remember">De quoi aimeriez-vous vous souvenir ?</string>
+</resources>
