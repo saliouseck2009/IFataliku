@@ -17,6 +17,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.ifataliku.home.HomePage
+import com.example.ifataliku.home.HomePageDestination
 import com.example.ifataliku.home.reflection.ReflectionDestination
 import com.example.ifataliku.home.reflection.ReflectionPage
 import com.example.ifataliku.home.souvenirs.SouvenirDestination
@@ -36,25 +38,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    NavHost(navController = navController , startDestination =
-                    ReflectionDestination.route ){
-                        composable(ReflectionDestination.route) {
-                            ReflectionPage(onGoToSouvenir = {
-                                navController.navigate(SouvenirDestination.route)
-                            })
-                        }
-                        composable(SouvenirDestination.route) {
-                            val viewModel: SouvenirViewModel = hiltViewModel()
-                            val pageData by viewModel.souvenirStateData.collectAsState()
-                            val state by viewModel.state.collectAsState()
-                            SouvenirPage(
-                                viewModelEvent = viewModel.viewModelEvent,
-                                onEvent= {event -> viewModel.dispatchUiEvent(event)},
-                                state = state,
-                                data = pageData
-                            )
-                        }
-                    }
+                    HomePage(navController = navController)
                 }
             }
         }

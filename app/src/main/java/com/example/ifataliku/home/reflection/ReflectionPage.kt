@@ -45,7 +45,7 @@ fun ReflectionPage(
             modifier = Modifier
                 .padding(it)
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -114,11 +114,8 @@ fun ReflectionPage(
                                 , )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                       // EmojiPicker()
-                        Button(onClick = onGoToSouvenir) {
-                            Text("Souvenirs")
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
+
+
 
                     }
                 }
