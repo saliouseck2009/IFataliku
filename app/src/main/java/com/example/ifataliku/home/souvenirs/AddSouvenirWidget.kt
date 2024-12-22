@@ -36,12 +36,12 @@ import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.InsertLink
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -390,6 +390,7 @@ private fun FeelingPicker(
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EmojiPickerItem(
     emoji: TitleEmoji,
@@ -398,7 +399,7 @@ private fun EmojiPickerItem(
     color: Color, 
     modifier: Modifier = Modifier
 ){
-    CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+    CompositionLocalProvider(LocalRippleConfiguration provides null) {
         Card(
             onClick = onClick,
             shape = RoundedCornerShape(15),

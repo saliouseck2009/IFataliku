@@ -1,7 +1,6 @@
 package com.example.ifataliku.home
 
 import IFatalikuTheme
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -176,9 +175,7 @@ fun HomePage(navController : NavHostController = rememberNavController()) {
                 modifier = Modifier.padding(it) ){
 
                 composable(ReflectionDestination.route) {
-                    ReflectionPage(onGoToSouvenir = {
-                        navController.navigate(SouvenirDestination.route)
-                    })
+                    ReflectionPage()
                 }
                 composable(SouvenirDestination.route) {
                     val viewModel: SouvenirViewModel = hiltViewModel()
