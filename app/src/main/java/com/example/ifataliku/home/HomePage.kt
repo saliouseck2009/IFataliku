@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.CardGiftcard
 import androidx.compose.material.icons.outlined.Category
-import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,8 +35,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.ifataliku.NavigationDestination
-import com.example.ifataliku.R
 import com.example.ifataliku.home.reflection.ReflectionDestination
 import com.example.ifataliku.home.reflection.ReflectionPage
 import com.example.ifataliku.home.souvenirs.SouvenirDestination
@@ -46,10 +43,7 @@ import com.example.ifataliku.home.souvenirs.SouvenirViewModel
 import com.example.ifataliku.home.stats.StatPage
 import com.example.ifataliku.home.stats.StatPageDestination
 
-object HomePageDestination : NavigationDestination {
-    override val route: String = "home"
-    override val titleRes: Int = R.string.home_page
-}
+
 data class BottomNavigationItem(
     val title: String,
     val selectedIcon: ImageVector,
@@ -60,20 +54,21 @@ data class BottomNavigationItem(
 )
 
 @Preview(showBackground = true)
+@Preview(apiLevel = 33)
 @Composable
 fun HomePagePreview() {
-    IFatalikuTheme() {
+    IFatalikuTheme {
         HomePage()
     }
 }
 @Preview(showBackground = true)
+@Preview(apiLevel = 33)
 @Composable
 fun HomePageDarkPreview() {
     IFatalikuTheme(darkTheme = true) {
         HomePage()
     }
 }
-
 
 @Composable
 fun HomePage(navController : NavHostController = rememberNavController()) {
@@ -105,7 +100,6 @@ fun HomePage(navController : NavHostController = rememberNavController()) {
     )
     Surface(
         modifier = Modifier.fillMaxSize(),
-       // color = MaterialTheme.colorScheme.background
     ) {
         Scaffold(
             bottomBar = {
@@ -113,6 +107,12 @@ fun HomePage(navController : NavHostController = rememberNavController()) {
                             containerColor = Color.Transparent,
                     ) {
                         items.forEachIndexed { index, item ->
+                            val isSelected = selectedItemIndex == index
+                            val menuItemColor = if (isSelected) {
+                                MaterialTheme.colorScheme.onBackground
+                            } else {
+                                MaterialTheme.colorScheme.outline
+                            }
                             NavigationBarItem(
                                 colors = NavigationBarItemDefaults.colors(
                                     indicatorColor = Color.Transparent,
@@ -131,35 +131,19 @@ fun HomePage(navController : NavHostController = rememberNavController()) {
                                 label = {
                                     Text(
                                         text = item.title,
-                                        color = if (index == selectedItemIndex) {
-                                            MaterialTheme.colorScheme.onBackground
-                                        } else {
-                                            MaterialTheme.colorScheme.outline
-                                        }
+                                        color = menuItemColor
                                     )
                                 },
                                 alwaysShowLabel = true,
                                 icon = {
                                     BadgedBox(
-                                        badge = {
-                                            if (item.badgeCount != null) {
-                                                Badge {
-                                                    Text(text = item.badgeCount.toString())
-                                                }
-                                            } else if (item.hasNews) {
-                                                Badge()
-                                            }
-                                        }
+                                        badge = {}
                                     ) {
                                         Icon(
                                             imageVector = if (index == selectedItemIndex) {
                                                 item.selectedIcon
                                             } else item.unselectedIcon,
-                                            tint = if (index == selectedItemIndex) {
-                                                MaterialTheme.colorScheme.onBackground
-                                            } else {
-                                                MaterialTheme.colorScheme.outline
-                                            },
+                                            tint = menuItemColor,
                                             contentDescription = item.title
                                         )
                                     }

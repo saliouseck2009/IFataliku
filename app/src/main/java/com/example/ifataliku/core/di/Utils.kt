@@ -1,7 +1,6 @@
 package com.example.ifataliku.core.di
 
 import androidx.compose.ui.graphics.Color
-import com.example.ifataliku.domain.entities.Souvenir
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -48,13 +47,9 @@ object Utils {
                 .toLong(radix = 16).toInt()
         )
     }
-    fun getEmojiFromSouvenir(souvenir: Souvenir): List<String> {
-        var emojis = mutableListOf<String>()
-        emojis.add(souvenir.category.emoji)
-        if(souvenir.attachments.isNotEmpty())
-            emojis.add("📎")
-        emojis.add(souvenir.feeling.emoji)
-        return emojis
 
+    fun String.asColor(): Color{
+        return getColorFromHexString(this)
     }
+
 }
