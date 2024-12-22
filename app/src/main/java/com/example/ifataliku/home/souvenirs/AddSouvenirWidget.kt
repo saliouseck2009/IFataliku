@@ -1,9 +1,7 @@
 package com.example.ifataliku.home.souvenirs
 
 import IFatalikuTheme
-import NoRippleTheme
 import android.net.Uri
-import android.widget.Space
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,24 +28,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddLocation
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.InsertLink
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -69,7 +65,6 @@ import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.domain.entities.Souvenir
 import com.example.ifataliku.domain.entities.TitleEmoji
 import com.example.ifataliku.domain.entities.souvenirs
-import com.example.ifataliku.home.reflection.Category
 import com.example.ifataliku.home.reflection.categories
 import com.example.ifataliku.widgets.ColorItemWidget
 import com.example.ifataliku.widgets.CustomDropDownMenu
@@ -83,9 +78,7 @@ fun AddSouvenirWidget(
     onEvent: (SouvenirUIEvent) -> Unit ,
     souvenir: Souvenir,
     modifier: Modifier = Modifier) {
-    Surface(
-
-    ) {
+    Surface{
         Column(
 
             modifier = modifier
@@ -93,7 +86,7 @@ fun AddSouvenirWidget(
                 .padding(bottom = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            var expandState = remember { mutableStateOf(false) }
+            val expandState = remember { mutableStateOf(false) }
 
             var selectedImageUris by remember {
                 mutableStateOf<List<Uri>>(emptyList())
@@ -106,11 +99,11 @@ fun AddSouvenirWidget(
                     selectedImageUris = uris
                 }
             )
-            Header(onClose = onClose, onSave = onSave, choosedColor = souvenir.color)
+            Header(onClose = onClose, onSave = onSave, chosenColor = souvenir.color)
             QuestionSection(
                 emoji = souvenir.emoji,
                 value = souvenir.title,
-                onEmojiChoosed = {
+                onEmojiChosen = {
                     onEvent(SouvenirUIEvent.OnEmojiSelected(it))
                 },
                 onValueChange = {
@@ -119,7 +112,7 @@ fun AddSouvenirWidget(
             )
 
             DatePickerSection(
-                choosedDate = souvenir.date,
+                chosenDate = souvenir.date,
                 selectedColor = souvenir.color,
                 onValueChange = {
                     onEvent(SouvenirUIEvent.OnDateChanged(it))
@@ -129,7 +122,8 @@ fun AddSouvenirWidget(
                 title = stringResource(R.string.category),
                 items = categories.map { "${it.emoji} ${it.title}" },
                 expanded = expandState.value,
-                currentValue = souvenir.category.emoji + " " + souvenir.category.title,
+                currentValue = souvenir.categories.first().emoji + " " + souvenir.categories.first()
+                    .title,
                 onValueChanged = { value ->
                     onEvent(SouvenirUIEvent.OnCategorySelected(value))
 
@@ -215,9 +209,7 @@ fun ImagePreviewSection(
                 .fillMaxWidth()
         ) {
             imageUris.forEach { uri ->
-                Card(
-                    // modifier = Modifier.padding(8.dp),
-                ) {
+                Card{
                     AsyncImage(
                         model = uri,
                         contentDescription = null,
@@ -249,17 +241,17 @@ fun AttachmentsSection(
                 .horizontalScroll(rememberScrollState())
                 .fillMaxWidth()
         ) {
-            IconedButton(
+            IconButtonView(
                 icon = Icons.Filled.PhotoCamera,
                 text = "Photos",
                 onClick = pickPhotos
             )
-            IconedButton(
+            IconButtonView(
                 icon = Icons.Filled.MyLocation,
                 text = "Location",
                 onClick = {}
             )
-            IconedButton(
+            IconButtonView(
                 icon = Icons.Filled.InsertLink,
                 text = "Link",
                 onClick = {}
@@ -269,18 +261,15 @@ fun AttachmentsSection(
 }
 
 @Composable
-fun IconedButton(
-    icon: ImageVector = Icons.Filled.Close,
+fun IconButtonView(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    icon: ImageVector = Icons.Filled.Close,
 ){
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(15),
-//        colors = CardDefaults.cardColors(
-//            containerColor = Color.Transparent,
-//        ),
         modifier = modifier
     ) {
         Row(
@@ -305,7 +294,7 @@ fun ColorPickerSection(
     onColorChanged: (String) -> Unit,
     modifier: Modifier = Modifier
 ){
-    var colorItems = remember{ listOf<String>(
+    val colorItems = remember{ listOf(
         "f72585",
         "E65C19",
         "b08968",
@@ -356,7 +345,7 @@ private fun FeelingPicker(
     selectedColor: String,
     modifier: Modifier = Modifier
 ){
-    var emojis  = remember{ listOf<TitleEmoji>(
+    val emojis  = remember{ listOf(
         TitleEmoji("😩", "Terrible"),
         TitleEmoji("☹️️", "Bad"),
         TitleEmoji("😐", "Okay"),
@@ -390,6 +379,7 @@ private fun FeelingPicker(
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EmojiPickerItem(
     emoji: TitleEmoji,
@@ -398,7 +388,7 @@ private fun EmojiPickerItem(
     color: Color, 
     modifier: Modifier = Modifier
 ){
-    CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+    CompositionLocalProvider(LocalRippleConfiguration provides null) {
         Card(
             onClick = onClick,
             shape = RoundedCornerShape(15),
@@ -442,7 +432,7 @@ private fun EmojiPickerItem(
 
 @Composable
 private fun DatePickerSection(
-    choosedDate: String,
+    chosenDate: String,
     onValueChange: (String) -> Unit,
     selectedColor: String,
     modifier: Modifier = Modifier
@@ -462,12 +452,12 @@ private fun DatePickerSection(
         ) {
             Text(text = "Date")
             DatePickerWidget(
-                value = choosedDate,
+                value = chosenDate,
                 onValueChange = onValueChange,
                 pattern = "yyyy-MM-dd"
             ) {
                 Text(
-                    text = choosedDate,
+                    text = chosenDate,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -486,10 +476,10 @@ private fun DatePickerSection(
 private fun QuestionSection(
     emoji: String,
     value : String,
-    onEmojiChoosed: (String) -> Unit,
+    onEmojiChosen: (String) -> Unit,
     onValueChange: (String) -> Unit,
 
-) {
+    ) {
     Column(
         modifier = Modifier
             .padding(bottom = 16.dp , start = 16.dp, end = 16.dp)
@@ -501,11 +491,11 @@ private fun QuestionSection(
         Row {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                onClick = { /*TODO*/ }) {
+                onClick = { }) {
                 EmojiPicker(
                     selectedEmoji = emoji,
                     onEmojiSelected = { emoji ->
-                        onEmojiChoosed(emoji)
+                        onEmojiChosen(emoji)
                     },
                     size = 30,
                     modifier = Modifier
@@ -534,9 +524,9 @@ private fun QuestionSection(
 
 @Composable
 private fun Header(
-    onClose: () -> Unit ,
-    onSave: () -> Unit ,
-    choosedColor: String,
+    onClose: () -> Unit,
+    onSave: () -> Unit,
+    chosenColor: String,
     modifier: Modifier = Modifier
 ){
     Row(
@@ -569,13 +559,13 @@ private fun Header(
                 .border(1.dp, color = Color.Transparent, shape = CircleShape)
                 .background(
                     Utils
-                        .getColorFromHexString(choosedColor)
+                        .getColorFromHexString(chosenColor)
                         .copy(alpha = 0.3f), shape = CircleShape
                 )
                 .clickable(onClick = onSave)
         ) {
             Text(text = stringResource(R.string.ajouter),
-                color = Utils.getColorFromHexString(choosedColor),
+                color = Utils.getColorFromHexString(chosenColor),
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(8.dp))
         }

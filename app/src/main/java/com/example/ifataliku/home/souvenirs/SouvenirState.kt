@@ -35,16 +35,6 @@ sealed interface SouvenirUIEvent {
     data object OnValidateNewSouvenir : SouvenirUIEvent
 }
 
-//val initialSouvenir = Souvenir(
-//        emoji = "🎉",
-//        title = "",
-//        date = "",
-//        time = "",
-//        category = Category("📖", "Education"),
-//        color = "640D6B",
-//        feeling = TitleEmoji("🙂", "Good"),
-//        images = emptyList()
-//    )
 
 data class ColorItem(
     val color: String,

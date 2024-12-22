@@ -31,8 +31,6 @@ class SouvenirViewModel @Inject constructor(
     val souvenirStateData = _souvenirStateData.asStateFlow()
     private val _viewModelEvent = Channel<SouvenirViewModelEvent>()
     val viewModelEvent = _viewModelEvent.receiveAsFlow()
-//    private val _uiEvent = Channel<SouvenirUIEvent>()
-//    val uiEvent = _uiEvent.receiveAsFlow()
     init {
         initPageData()
     }
@@ -41,7 +39,7 @@ class SouvenirViewModel @Inject constructor(
         title = "",
         date = LocalDate.now().toString(),
         time = "",
-        category = Category("📖", "Education"),
+        categories = listOf(Category("📖", "Education")),
         color = "640D6B",
         feeling = TitleEmoji("🙂", "Good"),
         images = emptyList()
@@ -49,7 +47,7 @@ class SouvenirViewModel @Inject constructor(
 
     private fun initPageData() {
         viewModelScope.launch {
-            delay(3000)
+            delay(1000)
             _state.value = SouvenirState.Loading
             getAllSouvenirsUseCase().let {
                 _souvenirStateData.value = SouvenirStateData(it)
@@ -78,10 +76,11 @@ class SouvenirViewModel @Inject constructor(
             is SouvenirUIEvent.OnCategorySelected -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(category =  Category(
+                        souvenir = _souvenirStateData.value.souvenir?.copy(categories = listOf(
+                                Category(
                             emoji = event.category.split(" ")[0],
                             title = event.category.split(" ")[1]
-                        )
+                        ))
                         )
                     )
                 }
