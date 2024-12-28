@@ -14,4 +14,12 @@
     <string name="how_do_you_feel">How do you feel?</string>
     <string name="what_would_you_like_to_remember">What would you like to remember?</string>
     <string name="ma_journ_e">My Journey</string>
+    <string name="title_for_your_memory">Title for your memory</string>
+    <string name="describe_it_in_detail">Describe it in detail</string>
+    <string name="mood">Mood</string>
+    <string name="color">Color</string>
+    <string name="what_hue_defines_your_souvenir">What hue defines your souvenir?</string>
+    <string name="which_category_your_souvenir_falls_into">Which category your souvenir falls into?</string>
+    <string name="how_did_you_feel_when_taking_this_souvenir">How did you feel when taking this souvenir?</string>
+    <string name="add_photos">Add Photos</string>
 </resources>

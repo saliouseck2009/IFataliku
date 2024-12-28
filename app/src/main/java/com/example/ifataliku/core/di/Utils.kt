@@ -48,8 +48,21 @@ object Utils {
         )
     }
 
-    fun String.asColor(): Color{
-        return getColorFromHexString(this)
-    }
 
+
+
+
+}
+
+fun String.asColor(): Color{
+    return Utils.getColorFromHexString(this)
+}
+
+fun <T> List<T>.safeSublist(start: Int, end: Int): List<T> {
+    val safeStart = start.coerceIn(0, this.size)  // Ensure start is within bounds
+    val safeEnd = end.coerceIn(0, this.size)      // Ensure end is within bounds
+
+    if (safeStart > safeEnd) return emptyList()    // Return empty if start > end
+
+    return this.subList(safeStart, safeEnd)        // Return the sublist based on valid indices
 }

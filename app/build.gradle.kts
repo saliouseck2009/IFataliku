@@ -89,7 +89,7 @@ dependencies {
     implementation("com.google.android.material:compose-theme-adapter:1.2.1")
 
     // image coil
-    implementation ("io.coil-kt:coil-compose:2.1.0")
+    implementation ("io.coil-kt.coil3:coil-compose:3.0.4")
     // shape
     implementation ("androidx.graphics:graphics-shapes:1.0.1")
 

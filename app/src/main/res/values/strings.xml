@@ -13,4 +13,12 @@
     <string name="how_do_you_feel">Comment vous sentez-vous?</string>
     <string name="what_would_you_like_to_remember">De quoi aimeriez-vous vous souvenir ?</string>
     <string name="ma_journ_e">Ma Journée</string>
+    <string name="title_for_your_memory">Un titre pour votre souvenir</string>
+    <string name="describe_it_in_detail">Décriver le en détail</string>
+    <string name="mood">Sentiment</string>
+    <string name="color">Couleur</string>
+    <string name="what_hue_defines_your_souvenir">Quelle couleur définit votre souvenir ?</string>
+    <string name="which_category_your_souvenir_falls_into">Dans quelle catégorie se situe votre souvenir?</string>
+    <string name="how_did_you_feel_when_taking_this_souvenir">Qu\'avez-vous ressenti en prenant ce souvenir ?</string>
+    <string name="add_photos">Choisir</string>
 </resources>

@@ -37,10 +37,11 @@ class SouvenirViewModel @Inject constructor(
     private val initialSouvenir = Souvenir(
         emoji = "🎉",
         title = "",
+        description = "",
         date = LocalDate.now().toString(),
         time = "",
         categories = listOf(Category("📖", "Education")),
-        color = "640D6B",
+        color = AppData.colorItems.first(),
         feeling = TitleEmoji("🙂", "Good"),
         images = emptyList()
     )
@@ -77,11 +78,9 @@ class SouvenirViewModel @Inject constructor(
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
                         souvenir = _souvenirStateData.value.souvenir?.copy(categories = listOf(
-                                Category(
-                            emoji = event.category.split(" ")[0],
-                            title = event.category.split(" ")[1]
+                                event.category,
                         ))
-                        )
+
                     )
                 }
             }
@@ -137,6 +136,14 @@ class SouvenirViewModel @Inject constructor(
                             }
                         }
                     }
+                }
+            }
+
+            is SouvenirUIEvent.OnDescriptionChanged -> {
+                viewModelScope.launch {
+                    _souvenirStateData.value = _souvenirStateData.value.copy(
+                        souvenir = _souvenirStateData.value.souvenir?.copy(description = event.description)
+                    )
                 }
             }
         }

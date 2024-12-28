@@ -2,13 +2,11 @@ package com.example.ifataliku.home.souvenirs
 
 import IFatalikuTheme
 import android.net.Uri
+import android.widget.Space
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,20 +14,24 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.InsertLink
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -40,37 +42,49 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.Utils
+import com.example.ifataliku.core.di.asColor
 import com.example.ifataliku.domain.entities.Souvenir
 import com.example.ifataliku.domain.entities.TitleEmoji
 import com.example.ifataliku.domain.entities.souvenirs
-import com.example.ifataliku.home.reflection.categories
+import com.example.ifataliku.home.reflection.Category
 import com.example.ifataliku.widgets.ColorItemWidget
-import com.example.ifataliku.widgets.CustomDropDownMenu
 import com.example.ifataliku.widgets.DatePickerWidget
 import com.example.ifataliku.widgets.EmojiPicker
+import com.example.ifataliku.widgets.ImagePickerView
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddSouvenirWidget(
     onClose: () -> Unit ,
@@ -78,28 +92,46 @@ fun AddSouvenirWidget(
     onEvent: (SouvenirUIEvent) -> Unit ,
     souvenir: Souvenir,
     modifier: Modifier = Modifier) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var selectedTab by remember { mutableIntStateOf(0) }
+
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+               showBottomSheet = false
+            },
+
+            sheetState = sheetState,
+        ){
+            BottomPagerView(
+                souvenir = souvenir,
+                onEvent = onEvent,
+                selectedTab = selectedTab,
+            )
+        }
+    }
     Surface{
         Column(
-
             modifier = modifier
                 .fillMaxSize()
                 .padding(bottom = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            val expandState = remember { mutableStateOf(false) }
 
             var selectedImageUris by remember {
                 mutableStateOf<List<Uri>>(emptyList())
             }
 
             val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.PickMultipleVisualMedia(),
+                contract = ActivityResultContracts.PickMultipleVisualMedia(6),
                 onResult = { uris ->
                     onEvent(SouvenirUIEvent.OnImageSelected(uris))
                     selectedImageUris = uris
                 }
             )
-            Header(onClose = onClose, onSave = onSave, chosenColor = souvenir.color)
+            Header(onClose = onClose, onSave = onSave, chosenColor = souvenir.color.color)
             QuestionSection(
                 emoji = souvenir.emoji,
                 value = souvenir.title,
@@ -110,44 +142,73 @@ fun AddSouvenirWidget(
                     onEvent(SouvenirUIEvent.OnTitleChanged(it))
                 }
             )
+            DescriptionSection(souvenir.description?:"",
+                modifier = Modifier.padding(horizontal = 16.dp),
+                onChanged = {
+                onEvent(SouvenirUIEvent.OnDescriptionChanged(it))
+            })
 
             DatePickerSection(
                 chosenDate = souvenir.date,
-                selectedColor = souvenir.color,
+                selectedColor = souvenir.color.color,
                 onValueChange = {
                     onEvent(SouvenirUIEvent.OnDateChanged(it))
                 }
             )
-            CustomDropDownMenu(
-                title = stringResource(R.string.category),
-                items = categories.map { "${it.emoji} ${it.title}" },
-                expanded = expandState.value,
-                currentValue = souvenir.categories.first().emoji + " " + souvenir.categories.first()
-                    .title,
-                onValueChanged = { value ->
-                    onEvent(SouvenirUIEvent.OnCategorySelected(value))
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    //.padding(horizontal = 16.dp),
+            ) {
+                TitledItemSection(
+                    title = stringResource(R.string.category),
+                    value = souvenir.categories.first().emoji + " " + souvenir.categories.first().title,
+                    onClick = {
+                        selectedTab = 0
+                        showBottomSheet = true
+                    },
+                    modifier = Modifier.padding(8.dp)
+                )
+                TitledItemSection(
+                    title = stringResource(R.string.color),
+                    value =  souvenir.color.label,
+                    onClick = {
+                        selectedTab = 1
+                        showBottomSheet = true
+                    },
+                    prefixValueWidget = {
+                        ColorItemWidget(
+                            color = souvenir.color.color.asColor(),
+                            size = 15,
+                            onClick ={},
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
+                    },
+                    modifier = Modifier.padding(8.dp)
+                )
+                TitledItemSection(
+                    title = stringResource(R.string.mood),
+                    value = souvenir.feeling.emoji + " " + souvenir.feeling.title,
+                    onClick = {
+                        selectedTab = 2
+                        showBottomSheet = true
+                    },
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
 
-                },
-                onExpanded = { value ->
-                    expandState.value = value
-                },
-                modifier = modifier.padding(horizontal = 8.dp)
-            )
-            ColorPickerSection(
-                selectedColor = souvenir.color,
-                onColorChanged = {
-                    onEvent(SouvenirUIEvent.OnColorSelected(it))
-                },
-                modifier = modifier.padding(horizontal = 16.dp)
-            )
             Spacer(modifier = Modifier.height(16.dp))
-            FeelingPicker(
-                selectedEmoji = souvenir.feeling,
-                onValueChange = {
-                    onEvent(SouvenirUIEvent.OnFeelingSelected(it))
+            ImagePickerView(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                pickPhotos = {
+                    multiplePhotoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
                 },
-                selectedColor = souvenir.color,
-                modifier = modifier.padding(horizontal = 16.dp)
+                images = selectedImageUris,
+                color = souvenir.color.color.asColor()
             )
             Spacer(modifier = Modifier.height(16.dp))
             AttachmentsSection(
@@ -166,13 +227,55 @@ fun AddSouvenirWidget(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
                 },
-                selectedColor = Utils.getColorFromHexString(souvenir.color),
+                selectedColor = souvenir.color.color.asColor(),
                 modifier = modifier
             )
 
 
         }
     }
+}
+
+@Composable
+private fun TitledItemSection(
+    title: String,
+    value: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    prefixValueWidget: @Composable () -> Unit = {},
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent,
+        ),
+        onClick = onClick,
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp, end = 16.dp, start = 8.dp)) {
+            Text(
+                title, style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Row {
+                prefixValueWidget()
+                Text(value, style = MaterialTheme.typography.bodyMedium, modifier = Modifier
+                    )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DescriptionSection(
+    value: String,
+    onChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    DefaultTextFieldView(value = value,
+        placeHolder = stringResource(R.string.describe_it_in_detail),
+        onValueChange = onChanged,
+        modifier = modifier)
 }
 
 @Composable
@@ -287,53 +390,111 @@ fun IconButtonView(
         }
     }
 }
+data class LabelledColor(val label: String, val color: String)
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ColorPickerSection(
-    selectedColor: String,
-    onColorChanged: (String) -> Unit,
+    selectedColor: LabelledColor,
+    onColorChanged: (LabelledColor) -> Unit,
     modifier: Modifier = Modifier
 ){
-    val colorItems = remember{ listOf(
-        "f72585",
-        "E65C19",
-        "b08968",
-        "c9ada7",
-        "81c3d7",
-        "8DB600",
-        "9f86c0",
-        "2f6690",
-        "898121",
-        "B2BEB5",
-        "76ABDF",
-        "D0F0C0",
-        "F5DEB3",
-        "87CEEB"
-    )}
-
-
     Column(modifier = modifier) {
-        Text("Color", style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)
+        Text(
+            stringResource(R.string.what_hue_defines_your_souvenir), style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .padding(bottom = 16.dp, end = 8.dp)
-                .horizontalScroll(rememberScrollState())
-                .fillMaxWidth()
+        
+            val rows = 4
+            val columns = 4
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                maxItemsInEachRow = rows
+            ) {
+                val itemModifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .height(70.dp)
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                repeat(rows * columns) {
+                    val colorItem = AppData.colorItems[it]
+                    Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier =itemModifier
+                ) {
+                    ColorItemWidget(
+                        color = Utils.getColorFromHexString(colorItem.color),
+                        onClick = { onColorChanged(colorItem) },
+                        isSelected = selectedColor.color == colorItem.color,
+                        size = 20,
+                        modifier = Modifier
+                    )
+                        Spacer(modifier = Modifier.height(4.dp))
+                    Text(colorItem.label, style = MaterialTheme.typography.bodySmall,
+                        textAlign =
+                    TextAlign.Center)
+                }
+                }
+            }
+
+    }
+
+}
+
+@Composable
+@Preview(showBackground = true)
+fun GridItemSectionPreview() {
+    GridItemSection(
+        selectedItem = AppData.categories.first().title,
+        onValueChanged = {},
+        items = AppData.categories,
+        modifier  = Modifier
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun GridItemSection(
+    items: List<Category>,
+    selectedItem: String,
+    onValueChanged: (value: Category) -> Unit,
+    modifier: Modifier = Modifier
+){
+    Column(modifier = modifier.fillMaxWidth()
         ) {
-            colorItems.forEach { colorItem ->
-                ColorItemWidget(
-                    color = Utils.getColorFromHexString(colorItem),
-                    isSelected = colorItem == selectedColor,
-                    onClick ={ onColorChanged(colorItem)},
+        Text(
+            stringResource(R.string.which_category_your_souvenir_falls_into), style = MaterialTheme.typography
+                .titleMedium,
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
+        )
+
+        val rows = 3
+        FlowRow(
+            horizontalArrangement = Arrangement.SpaceAround,
+            maxItemsInEachRow = rows,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            repeat(items.size) {
+                val isSelected = items[it].title == selectedItem
+                CategoryItemView(
+                    title = items[it].title,
+                    emoji = items[it].emoji,
+                    onClick = { onValueChanged(items[it]) },
+                    isSelected = isSelected,
                     modifier = Modifier
-                        .size(30.dp)
+                        .weight(1f)
+                        //.padding(bottom = if(it == items.size - 1) 32.dp else 0.dp)
                 )
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
         }
+
     }
 
 }
@@ -342,24 +503,17 @@ fun ColorPickerSection(
 private fun FeelingPicker(
     selectedEmoji: TitleEmoji,
     onValueChange: (TitleEmoji) -> Unit,
-    selectedColor: String,
     modifier: Modifier = Modifier
 ){
-    val emojis  = remember{ listOf(
-        TitleEmoji("😩", "Terrible"),
-        TitleEmoji("☹️️", "Bad"),
-        TitleEmoji("😐", "Okay"),
-        TitleEmoji("🙂", "Good"),
-        TitleEmoji("😄", "Awesome"),
-    )}
+    val emojis  = AppData.emojis
     Column(
         modifier = modifier
     ) {
         Text(
-            stringResource(R.string.how_do_you_feel), style = MaterialTheme.typography.titleMedium,
+            stringResource(R.string.how_did_you_feel_when_taking_this_souvenir),
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
             )
-        Spacer(modifier = Modifier.height(8.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -370,7 +524,6 @@ private fun FeelingPicker(
                     emoji = emoji,
                     isSelected = emoji == selectedEmoji,
                     onClick = {onValueChange(emoji)},
-                    color = Utils.getColorFromHexString(selectedColor),
                 )
             }
         }
@@ -385,9 +538,11 @@ private fun EmojiPickerItem(
     emoji: TitleEmoji,
     isSelected: Boolean,
     onClick: () -> Unit,
-    color: Color, 
     modifier: Modifier = Modifier
 ){
+    val sizeScale by animateFloatAsState(if (isSelected) 1.3f else 1f, label = "size scale")
+
+
     CompositionLocalProvider(LocalRippleConfiguration provides null) {
         Card(
             onClick = onClick,
@@ -396,39 +551,37 @@ private fun EmojiPickerItem(
                 containerColor = Color.Transparent,
             ),
             modifier = modifier
+                .graphicsLayer(
+                scaleX = sizeScale,
+                scaleY = sizeScale
+            )
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    text = emoji.emoji, style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(
-                    text = emoji.title, style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                    AnimatedVisibility(isSelected,
-                        enter = slideInVertically(
-                            initialOffsetY = { fullHeight -> -fullHeight },
-                            animationSpec = tween(durationMillis = 500)
-                        ),
-                        exit = slideOutVertically(
-                            targetOffsetY = { fullHeight -> -fullHeight },
-                            animationSpec = tween(durationMillis = 500)
-                        )
-                        ) {
-                    Icon(
-                        Icons.Filled.FiberManualRecord,
-                        contentDescription = "plain circle",
-                        tint = color, modifier = Modifier.size(10.dp)
+            Box {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.alpha(if (isSelected) 1f else 0.5f)
+                ) {
+                    Text(
+                        text = emoji.emoji, style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
+                    Text(
+                        text = emoji.title, style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                if (isSelected) {
+                    Surface {
+
+                    }
                 }
             }
         }
     }
 }
+
+
 
 @Composable
 private fun DatePickerSection(
@@ -439,6 +592,9 @@ private fun DatePickerSection(
 ){
     Card(
         shape = MaterialTheme.shapes.small,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
         modifier = modifier
             .padding(16.dp)
             .fillMaxWidth()
@@ -450,14 +606,14 @@ private fun DatePickerSection(
                 .padding(horizontal = 8.dp, vertical = 16.dp)
                 .fillMaxWidth()
         ) {
-            Text(text = "Date")
+            Text(text = "Date", color= MaterialTheme.colorScheme.outline,)
             DatePickerWidget(
                 value = chosenDate,
                 onValueChange = onValueChange,
                 pattern = "yyyy-MM-dd"
             ) {
                 Text(
-                    text = chosenDate,
+                    text = Utils.getFormattedDate(chosenDate),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -482,10 +638,12 @@ private fun QuestionSection(
     ) {
     Column(
         modifier = Modifier
-            .padding(bottom = 16.dp , start = 16.dp, end = 16.dp)
+            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
             .fillMaxWidth()
     ) {
-        Text(text = stringResource(R.string.what_would_you_like_to_remember), style = MaterialTheme.typography
+        Text(text = stringResource(R.string.what_would_you_like_to_remember),
+            color = MaterialTheme.colorScheme.outline,
+            style = MaterialTheme.typography
             .titleMedium)
         Spacer(Modifier.height(12.dp))
         Row {
@@ -502,24 +660,34 @@ private fun QuestionSection(
                         .size(50.dp)
                 )
             }
-                OutlinedTextField(
-                    shape = RoundedCornerShape(8.dp),
-                    value = value,
-                    onValueChange = onValueChange,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
-                        focusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    )
-                    ,modifier = Modifier
-                        .padding(start = 8.dp)
-                        .height(50.dp)
-                        .fillMaxWidth())
+            DefaultTextFieldView(value,
+                stringResource(R.string.title_for_your_memory), onValueChange,Modifier.padding(start
+            = 8.dp))
 
 
         }
     }
+}
+
+@Composable
+private fun DefaultTextFieldView(value: String,placeHolder: String = "", onValueChange: (String) -> Unit, modifier:
+Modifier = Modifier) {
+    OutlinedTextField(
+        shape = RoundedCornerShape(8.dp),
+        value = value,
+        placeholder = {
+                      Text(text =placeHolder, color = MaterialTheme.colorScheme.outline )
+        },
+        onValueChange = onValueChange,
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+            focusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ), modifier = modifier
+            .height(50.dp)
+            .fillMaxWidth()
+    )
 }
 
 @Composable
@@ -558,19 +726,190 @@ private fun Header(
             modifier = Modifier
                 .border(1.dp, color = Color.Transparent, shape = CircleShape)
                 .background(
-                    Utils
-                        .getColorFromHexString(chosenColor)
-                        .copy(alpha = 0.3f), shape = CircleShape
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    shape = CircleShape
                 )
                 .clickable(onClick = onSave)
         ) {
             Text(text = stringResource(R.string.ajouter),
-                color = Utils.getColorFromHexString(chosenColor),
+                color = MaterialTheme.colorScheme.outline,
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(8.dp))
         }
     }
 }
+
+
+
+@Composable
+fun BottomPagerView(
+    modifier: Modifier = Modifier,
+    souvenir: Souvenir ,
+    selectedTab: Int = 0,
+    onEvent: (SouvenirUIEvent) -> Unit,
+){
+
+    val pagerState = rememberPagerState(pageCount = {
+        3
+    })
+    LaunchedEffect(key1 = selectedTab) {
+        pagerState.animateScrollToPage(selectedTab)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.49f)
+            .padding(bottom = 16.dp)
+    ) {
+
+        Column(
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            HorizontalPager(state = pagerState) { page ->
+                when (page) {
+                    0 -> {
+                        GridItemSection(
+                            items = AppData.categories,
+                            selectedItem = souvenir.categories.first().title,
+                            onValueChanged = {
+                                onEvent(SouvenirUIEvent.OnCategorySelected(it))
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxHeight(),
+                        )
+                    }
+
+                    1 -> {
+                        ColorPickerSection(
+                            selectedColor = souvenir.color,
+                            onColorChanged = {
+                                onEvent(SouvenirUIEvent.OnColorSelected(it))
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxHeight()
+                        )
+                    }
+
+                    2 -> {
+                        FeelingPicker(
+                            selectedEmoji = souvenir.feeling,
+                            onValueChange = {
+                                onEvent(SouvenirUIEvent.OnFeelingSelected(it))
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxHeight()
+                        )
+                    }
+                }
+
+            }
+
+        }
+        PagerIndicator(
+            pageCount = pagerState.pageCount,
+            currentPageIndex = pagerState.currentPage,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+        )
+    }
+
+}
+
+@Composable
+fun PagerIndicator(pageCount: Int, currentPageIndex: Int, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ) {
+        Card(
+            modifier = Modifier
+                .align(Alignment.Center)
+                ,
+        ){
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .padding(vertical =  8.dp, horizontal = 12.dp)
+                    ,
+            ) {
+                repeat(pageCount) { iteration ->
+                    val color = if (currentPageIndex == iteration) Color.LightGray else Color.DarkGray
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 5.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                            .size(8.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryItemView(
+    emoji: String,
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isSelected: Boolean = false,
+){
+    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
+
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor,
+        ),
+        modifier = modifier
+
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(
+                emoji, style = MaterialTheme.typography.titleLarge,
+            )
+            Text(title, style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun CategoryItemViewPreview() {
+    CategoryItemView(
+        emoji = "🎉",
+        title = "Celebration",
+        onClick = {},
+        isSelected = true
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BottomPagerViewPreview(){
+    BottomPagerView(
+        souvenir = souvenirs.first(),
+        onEvent = {}
+    )
+}
+
+
 
 @Composable
 @Preview(showBackground = true)
@@ -591,3 +930,4 @@ fun AddSouvenirWidgetDarkPreview() {
         )
     }
 }
+
