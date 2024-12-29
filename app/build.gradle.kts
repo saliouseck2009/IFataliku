@@ -53,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     val navVersion = "2.8.5"
 
     implementation("androidx.core:core-ktx:1.15.0")
@@ -89,9 +90,12 @@ dependencies {
     implementation("com.google.android.material:compose-theme-adapter:1.2.1")
 
     // image coil
-    implementation ("io.coil-kt:coil-compose:2.1.0")
+    implementation ("io.coil-kt.coil3:coil-compose:3.0.4")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
     // shape
     implementation ("androidx.graphics:graphics-shapes:1.0.1")
+    //image meta data extractor
+    implementation ("androidx.exifinterface:exifinterface:1.3.7")
 
 
 

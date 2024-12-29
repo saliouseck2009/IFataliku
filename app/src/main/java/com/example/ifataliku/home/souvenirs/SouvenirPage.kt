@@ -1,7 +1,13 @@
 package com.example.ifataliku.home.souvenirs
 
 import IFatalikuTheme
+import android.content.Context
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,11 +42,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ifataliku.NavigationDestination
 import com.example.ifataliku.R
+import com.example.ifataliku.core.di.LocationUtils.getImageLocation
 import com.example.ifataliku.core.di.ObserveAsEvents
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.domain.entities.souvenirs
@@ -60,12 +69,13 @@ fun SouvenirPage(
     state: SouvenirState,
     data: SouvenirStateData,
     onEvent: (SouvenirUIEvent) -> Unit,
+    addSouvenirViewModelEvent: Flow<AddSouvenirViewModelEvent>,
 ) {
     val context = LocalContext.current
 
     when(state) {
         is SouvenirState.Success -> {
-            PageContent(data = data, onEvent = onEvent, viewModelEvent = viewModelEvent)
+            PageContent(data = data, onEvent = onEvent, viewModelEvent = viewModelEvent, addSouvenirViewModelEvent = addSouvenirViewModelEvent)
         }
         is SouvenirState.Error -> {
              ErrorWidget(
@@ -81,12 +91,80 @@ fun SouvenirPage(
 
 }
 
+@Composable
+fun SelectAndRetrieveImageLocation() {
+    val context = LocalContext.current
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            imageUri = uri
+        }
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = { launcher.launch("image/*") }) {
+            Text("Select Image")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        imageUri?.let {
+            RetrieveImageLocation(uri = it, context = context)
+        }
+    }
+}
+@Composable
+fun RetrieveImageLocation(uri: Uri?, context: Context) {
+    // Mutable state to hold the extracted location
+    var location by remember { mutableStateOf<Pair<Double?, Double?>>(Pair(null,null)) }
+
+    // Button to trigger location extraction
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = {
+            uri?.let {
+                // Retrieve location metadata from the image
+                location = getImageLocation(context, uri)
+                println("location: $location")
+            }
+        }) {
+            Text("Retrieve Image Location")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Display the extracted location
+        Text(
+            text = location.toString() ?: "No location data found",
+            style = MaterialTheme.typography.bodySmall,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PageContent(
     data: SouvenirStateData,
     onEvent: (SouvenirUIEvent) -> Unit,
     viewModelEvent: Flow<SouvenirViewModelEvent>,
+    addSouvenirViewModelEvent: Flow<AddSouvenirViewModelEvent>,
     modifier: Modifier = Modifier
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -137,6 +215,8 @@ private fun PageContent(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+//            SelectAndRetrieveImageLocation()
+//            Spacer(modifier = Modifier.height(16.dp))
             data.souvenirs
                 .forEach { (month, souvenirs) ->
                     Spacer(modifier = Modifier.height(16.dp))
@@ -165,6 +245,7 @@ private fun PageContent(
                     onSave = {
                         onEvent(SouvenirUIEvent.OnValidateNewSouvenir)
                     },
+                    viewModelEvent = addSouvenirViewModelEvent,
                     onEvent = onEvent
                 )
             }
@@ -181,10 +262,11 @@ fun SouvenirPagePreview() {
             Pair(month, souvenirs)
         }
     SouvenirPage(
+        viewModelEvent = flow {  },
         state = SouvenirState.Success,
         data = SouvenirStateData(souvenirs = data),
         onEvent = {  },
-        viewModelEvent = flow {  },
+        addSouvenirViewModelEvent = flow {  },
 
     )
 }
@@ -199,10 +281,11 @@ fun SouvenirPageDarkPreview() {
                 Pair(month, souvenirs)
             }
         SouvenirPage(
+            viewModelEvent = flow {  },
             state = SouvenirState.Success,
             data = SouvenirStateData(souvenirs = data),
             onEvent = {  },
-            viewModelEvent = flow {  },
+            addSouvenirViewModelEvent = flow {  },
 
             )
     }

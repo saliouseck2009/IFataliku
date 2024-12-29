@@ -46,6 +46,7 @@ import androidx.graphics.shapes.toPath
 import com.example.ifataliku.NavigationDestination
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.Utils
+import com.example.ifataliku.home.souvenirs.AppData
 import com.example.ifataliku.widgets.CategoryView
 import com.example.ifataliku.widgets.SmallCategoryGridView
 
@@ -140,7 +141,7 @@ fun ReflectionPage(
 
                 }
 
-                items(categories.take(5)) {category ->
+                items(AppData.categories.take(5)) { category ->
                     CategoryView(
                         category.emoji,
                         category.title,
@@ -168,13 +169,13 @@ fun ReflectionPage(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         val pagerState = rememberPagerState(pageCount = {
-                            categories.size / 6
+                            AppData.categories.size / 6
                         })
                         HorizontalPager(
                             state = pagerState,
                             modifier = Modifier
                         ){
-                                SmallCategoryGridView(categories = categories.chunked(6)[pagerState.currentPage],
+                                SmallCategoryGridView(categories = AppData.categories.chunked(6)[pagerState.currentPage],
                                     modifier = Modifier
                                 , )
                         }

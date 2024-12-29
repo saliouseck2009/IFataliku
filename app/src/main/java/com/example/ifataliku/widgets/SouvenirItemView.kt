@@ -26,13 +26,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ifataliku.core.di.Utils
-import com.example.ifataliku.core.di.Utils.asColor
+import com.example.ifataliku.core.di.asColor
 import com.example.ifataliku.domain.entities.Souvenir
 import com.example.ifataliku.domain.entities.souvenirs
 import com.example.ifataliku.home.reflection.Category
 import com.example.ifataliku.home.reflection.EmojiCard
 import com.example.ifataliku.home.reflection.TimeLineComposable
-import com.example.ifataliku.home.reflection.categories
+import com.example.ifataliku.home.souvenirs.AppData
 
 @Composable
 fun SouvenirItemView(
@@ -78,8 +78,9 @@ fun SouvenirItemView(
                             .fillMaxWidth()
                     ) {
                         Row {
-                            categories.take(2).forEach {
-                                RoundedCardText(category = it, color = souvenir.color.asColor())
+                            AppData.categories.take(2).forEach {
+                                RoundedCardText(category = it, color = souvenir.color.color
+                                    .asColor())
                                 Spacer(modifier = Modifier.padding(end = 4.dp))
                             }
                         }
@@ -103,6 +104,7 @@ private fun EmojiWithTimeLineView(
     ) {
         TimeLineComposable(
             modifier = Modifier.offset(
+                4.dp,
             )
         )
         EmojiCard(
@@ -110,7 +112,7 @@ private fun EmojiWithTimeLineView(
             shapeSize = 80,
             rotateAngle = randomRotateAngle,
             morphProgress = morphProgress,
-            backgroundColor = souvenir.color.asColor(),
+            backgroundColor = souvenir.color.color.asColor(),
             modifier = Modifier
                 .offset(4.dp, (-16).dp)
         )
@@ -185,7 +187,7 @@ fun RoundedCardText(
     ) {
         Text(text = "${category.emoji} ${category.title}",
             style = MaterialTheme.typography.titleSmall.copy(fontSize = 11.sp),
-            modifier = Modifier.padding(horizontal = 6.dp))
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp))
     }
 }
 

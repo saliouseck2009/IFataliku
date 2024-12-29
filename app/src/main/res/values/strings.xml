@@ -13,4 +13,20 @@
     <string name="how_do_you_feel">Comment vous sentez-vous?</string>
     <string name="what_would_you_like_to_remember">De quoi aimeriez-vous vous souvenir ?</string>
     <string name="ma_journ_e">Ma Journée</string>
+    <string name="title_for_your_memory">Un titre pour votre souvenir</string>
+    <string name="describe_it_in_detail">Décriver le en détail</string>
+    <string name="mood">Sentiment</string>
+    <string name="color">Couleur</string>
+    <string name="what_hue_defines_your_souvenir">Quelle couleur définit votre souvenir ?</string>
+    <string name="which_category_your_souvenir_falls_into">Dans quelle catégorie se situe votre souvenir?</string>
+    <string name="how_did_you_feel_when_taking_this_souvenir">Qu\'avez-vous ressenti en prenant ce souvenir ?</string>
+    <string name="add_photos">Choisir</string>
+    <string name="it_seems_you_permanently_declined_media_location_permission_you_can_go_to_the_app_settings_to_grant_it">Il semble que vous ayez définitivement refusé l\'autorisation de localisation des médias. Vous pouvez accéder aux paramètres de l\'application pour l\'accorder.</string>
+    <string name="this_app_needs_access_to_your_media_location_to_know_where_you_are">Cette application a besoin d\'accéder à votre emplacement multimédia pour savoir où vous êtes.</string>
+    <string name="add_location">Ajouter</string>
+    <string name="it_seems_you_permanently_declined_location_permission_you_can_go_to_the_app_settings_to_grant_it">Il semble que vous ayez définitivement refusé l\'autorisation de localisation. Vous pouvez accéder aux paramètres de l\'application pour l\'accorder</string>
+    <string name="this_app_needs_access_to_your_location_to_know_where_you_are">Cette application a besoin d\'accéder à votre position pour savoir où vous êtes</string>
+    <string name="location_not_found">Position non disponible</string>
+    <string name="link">Lien</string>
+    <string name="please_enter_a_valid_url">Veuillez saisir une URL valide</string>
 </resources>

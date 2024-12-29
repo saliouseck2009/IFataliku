@@ -168,6 +168,7 @@ fun HomePage(navController : NavHostController = rememberNavController()) {
                     SouvenirPage(
                         viewModelEvent = viewModel.viewModelEvent,
                         onEvent= {event -> viewModel.dispatchUiEvent(event)},
+                        addSouvenirViewModelEvent = viewModel.addSouvenirViewModelEvent,
                         state = state,
                         data = pageData
                     )

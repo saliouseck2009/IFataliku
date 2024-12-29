@@ -41,6 +41,9 @@ fun CustomDropDownMenu(
        // border = BorderStroke(2.dp, color = Color(0xFFCFCFCF)),
         shape = MaterialTheme.shapes.small,
         elevation = CardDefaults.cardElevation(1.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
         onClick = {
             onExpanded(!expanded)
         },
