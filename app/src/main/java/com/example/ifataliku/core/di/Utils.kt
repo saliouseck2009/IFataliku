@@ -1,5 +1,8 @@
 package com.example.ifataliku.core.di
 
+import android.content.Context
+import android.media.ExifInterface
+import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -52,6 +55,56 @@ object Utils {
 
 
 
+}
+
+object LocationUtils{
+    fun getImageLocation(context: Context, imageUri: Uri): Pair<Double?, Double?> {
+        var latitude: Double? = null
+        var longitude: Double? = null
+
+        try {
+            val inputStream = context.contentResolver.openInputStream(imageUri)
+            inputStream?.use { stream ->
+                val exifInterface = ExifInterface(stream)
+
+                val latValue = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)
+                val latRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF)
+                val lngValue = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)
+                val lngRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF)
+
+                if (latValue != null && latRef != null && lngValue != null && lngRef != null) {
+                    latitude = if (latRef == "N") {
+                        convertRationalLatLonToDeg(latValue)
+                    } else {
+                        -convertRationalLatLonToDeg(latValue)
+                    }
+                    longitude = if (lngRef == "E") {
+                        convertRationalLatLonToDeg(lngValue)
+                    } else {
+                        -convertRationalLatLonToDeg(lngValue)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Handle exceptions (e.g., file not found, invalid URI)
+            e.printStackTrace()
+        }
+        return if(latitude == null || longitude == null){
+            Pair(null, null)
+        }else{
+            Pair(latitude, longitude)
+        }
+    }
+
+    // Helper function to convert rational latitude/longitude to degrees
+    private fun convertRationalLatLonToDeg(rationalString: String): Double {
+        val parts = rationalString.split(",")
+        val degrees = parts[0].split("/")[0].toDouble() / parts[0].split("/")[1].toDouble()
+        val minutes = parts[1].split("/")[0].toDouble() / parts[1].split("/")[1].toDouble()
+        val seconds = parts[2].split("/")[0].toDouble() / parts[2].split("/")[1].toDouble()
+
+        return degrees + (minutes / 60.0) + (seconds / 3600.0)
+    }
 }
 
 fun String.asColor(): Color{

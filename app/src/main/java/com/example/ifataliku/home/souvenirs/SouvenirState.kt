@@ -23,6 +23,10 @@ sealed interface SouvenirViewModelEvent {
     data class ShowMessage(val message: UiText) : SouvenirViewModelEvent
 }
 
+sealed interface AddSouvenirViewModelEvent {
+    data class RetrieveImageLocation(val uri: Uri) : AddSouvenirViewModelEvent
+}
+
 sealed interface SouvenirUIEvent {
     data object InitPageData : SouvenirUIEvent
     data object OpenAddSouvenir : SouvenirUIEvent
@@ -35,6 +39,9 @@ sealed interface SouvenirUIEvent {
     data class OnDescriptionChanged(val description: String) : SouvenirUIEvent
     data class OnDateChanged(val date: String) : SouvenirUIEvent
     data object OnValidateNewSouvenir : SouvenirUIEvent
+    data class OnLocationSelected(val lat: Double?, val lng: Double?) : SouvenirUIEvent
+    data object OnFetchCurrentLocation : SouvenirUIEvent
+    data class OnLinkChanged(val link: String) : SouvenirUIEvent
 }
 
 class AppData {

@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,25 +58,11 @@ fun ImagePickerView(
                     ImageConfig(70, 45, 10)
                 )
                 )
-            Card(
-                colors = CardDefaults.cardColors(
-                    contentColor = color,
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant                ),
-                onClick = pickPhotos
-            ){
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    IconButton(
-                        onClick = pickPhotos) {
-                        Icon(imageVector = Icons.Filled.AddAPhoto,
-                            contentDescription = "add photos")
-                    }
-                    Text(text = stringResource(R.string.add_photos), style = MaterialTheme.typography.titleSmall)
-                }
-            }
+            IconTitledPicker(
+                color,
+                pickPhotos,
+                title = stringResource(R.string.add_photos) ,
+                icon =  Icons.Filled.AddAPhoto)
             ImageDisplayView(modifier = Modifier.weight(1f),
                     images = images.safeSublist(3, 6),
                 imageConfigs = listOf(
@@ -83,6 +70,36 @@ fun ImagePickerView(
                     ImageConfig(30, 70, -15),
                     ImageConfig(70, 25, 10)
                 )
+            )
+        }
+    }
+}
+
+@Composable
+fun IconTitledPicker(color: Color, onClick: () -> Unit, icon: ImageVector, title: String) {
+    Card(
+        colors = CardDefaults.cardColors(
+            contentColor = color,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        onClick = onClick
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            IconButton(
+                onClick = onClick
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "add photos"
+                )
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall
             )
         }
     }

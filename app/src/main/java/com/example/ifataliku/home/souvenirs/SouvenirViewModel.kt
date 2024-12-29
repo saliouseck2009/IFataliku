@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.UiText
+import com.example.ifataliku.domain.entities.Coordinates
 import com.example.ifataliku.domain.entities.Souvenir
 import com.example.ifataliku.domain.entities.TitleEmoji
+import com.example.ifataliku.domain.repository.LocationTrackerRepo
 import com.example.ifataliku.domain.usecase.AddNewSouvenirUseCase
 import com.example.ifataliku.domain.usecase.GetAllSouvenirsUseCase
 import com.example.ifataliku.home.reflection.Category
@@ -22,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SouvenirViewModel @Inject constructor(
     private val getAllSouvenirsUseCase: GetAllSouvenirsUseCase,
-    private val addNewSouvenirUseCase: AddNewSouvenirUseCase
+    private val addNewSouvenirUseCase: AddNewSouvenirUseCase,
+    private val locationTrackerRepo: LocationTrackerRepo,
 ) : ViewModel(){
     private val  _state : MutableStateFlow<SouvenirState> = MutableStateFlow(SouvenirState.Loading)
     val state = _state.asStateFlow()
@@ -31,6 +34,8 @@ class SouvenirViewModel @Inject constructor(
     val souvenirStateData = _souvenirStateData.asStateFlow()
     private val _viewModelEvent = Channel<SouvenirViewModelEvent>()
     val viewModelEvent = _viewModelEvent.receiveAsFlow()
+    private val _addSouvenirViewModelEvent = Channel<AddSouvenirViewModelEvent>()
+    val addSouvenirViewModelEvent = _addSouvenirViewModelEvent.receiveAsFlow()
     init {
         initPageData()
     }
@@ -103,6 +108,13 @@ class SouvenirViewModel @Inject constructor(
                     _souvenirStateData.value = _souvenirStateData.value.copy(
                         souvenir = _souvenirStateData.value.souvenir?.copy(images = event.images)
                     )
+                    if (event.images.isNotEmpty()) {
+                        _addSouvenirViewModelEvent.send(
+                            AddSouvenirViewModelEvent.RetrieveImageLocation(
+                                uri = event.images.first()
+                            )
+                        )
+                    }
                 }
             }
             is SouvenirUIEvent.OnTitleChanged -> {
@@ -146,6 +158,44 @@ class SouvenirViewModel @Inject constructor(
                     )
                 }
             }
+            is SouvenirUIEvent.OnLocationSelected -> {
+                viewModelScope.launch {
+                    _souvenirStateData.value = _souvenirStateData.value.copy(
+                        souvenir = _souvenirStateData.value.souvenir?.copy(
+                            position = if (event.lat != null && event.lng != null) {
+                                Coordinates(event.lat, event.lng)
+                            } else {
+                                null
+                            }
+                        )
+                    )
+                }
+            }
+            is SouvenirUIEvent.OnFetchCurrentLocation -> {
+                viewModelScope.launch {
+                    locationTrackerRepo.getCurrentLocation().let {
+                        if (it != null){
+                            _souvenirStateData.value = _souvenirStateData.value.copy(
+                                souvenir = _souvenirStateData.value.souvenir?.copy(
+                                    position = Coordinates(it.latitude, it.longitude)
+                                )
+                            )}
+                        else{
+                            _viewModelEvent.send(SouvenirViewModelEvent.ShowMessage(
+                                UiText.StringResource(R.string.location_not_found)
+                            ))
+                        }
+                    }
+                }
+            }
+            is SouvenirUIEvent.OnLinkChanged -> {
+                viewModelScope.launch {
+                    _souvenirStateData.value = _souvenirStateData.value.copy(
+                        souvenir = _souvenirStateData.value.souvenir?.copy(link = event.link)
+                    )
+                }
+            }
+
         }
     }
 }

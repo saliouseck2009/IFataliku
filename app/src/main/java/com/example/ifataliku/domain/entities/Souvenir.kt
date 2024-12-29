@@ -17,7 +17,7 @@ data class Souvenir(
     val images: List<Uri>,
     val isFavorite: Boolean = false,
     val link: String? = "https://news.google.com/",
-    val position: Coordinates? = Coordinates(14.7, -17.2343),
+    val position: Coordinates? = null,
     val attachments: List<String> = emptyList()
 )
 

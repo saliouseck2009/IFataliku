@@ -2,9 +2,8 @@ package com.example.ifataliku.home.souvenirs
 
 import IFatalikuTheme
 import android.net.Uri
-import android.widget.Space
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -55,7 +54,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +63,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -73,8 +72,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.ifataliku.R
+import com.example.ifataliku.core.di.LocationUtils
+import com.example.ifataliku.core.di.ObserveAsEvents
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.core.di.asColor
+import com.example.ifataliku.domain.entities.Coordinates
 import com.example.ifataliku.domain.entities.Souvenir
 import com.example.ifataliku.domain.entities.TitleEmoji
 import com.example.ifataliku.domain.entities.souvenirs
@@ -83,20 +85,33 @@ import com.example.ifataliku.widgets.ColorItemWidget
 import com.example.ifataliku.widgets.DatePickerWidget
 import com.example.ifataliku.widgets.EmojiPicker
 import com.example.ifataliku.widgets.ImagePickerView
+import com.example.ifataliku.widgets.StaticMapView
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddSouvenirWidget(
-    onClose: () -> Unit ,
-    onSave: () -> Unit ,
-    onEvent: (SouvenirUIEvent) -> Unit ,
+    onClose: () -> Unit,
+    onSave: () -> Unit,
+    onEvent: (SouvenirUIEvent) -> Unit,
     souvenir: Souvenir,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier,
+    viewModelEvent: Flow<AddSouvenirViewModelEvent>
+) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
+    val context = LocalContext.current
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableIntStateOf(0) }
-
+    ObserveAsEvents(flow = viewModelEvent) { event ->
+        when (event) {
+            is AddSouvenirViewModelEvent.RetrieveImageLocation -> {
+                val location = LocationUtils.getImageLocation(context, event.uri)
+                Toast.makeText(context, location.toString(), Toast.LENGTH_SHORT).show()
+                onEvent(SouvenirUIEvent.OnLocationSelected(lat = location.first, lng = location.second))
+            }
+        }
+    }
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -125,7 +140,8 @@ fun AddSouvenirWidget(
             }
 
             val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.PickMultipleVisualMedia(6),
+               // contract = ActivityResultContracts.PickMultipleVisualMedia(6),
+                contract = ActivityResultContracts.GetMultipleContents(),
                 onResult = { uris ->
                     onEvent(SouvenirUIEvent.OnImageSelected(uris))
                     selectedImageUris = uris
@@ -203,36 +219,50 @@ fun AddSouvenirWidget(
             ImagePickerView(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 pickPhotos = {
-                    multiplePhotoPickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
+                    multiplePhotoPickerLauncher
+                        .launch("image/*")
+//                        .launch(
+//                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+//                    )
                 },
                 images = selectedImageUris,
                 color = souvenir.color.color.asColor()
             )
             Spacer(modifier = Modifier.height(16.dp))
-            AttachmentsSection(
-                modifier = modifier.padding(horizontal = 16.dp),
-                pickPhotos = {
-                    multiplePhotoPickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                }
+            StaticMapView(
+                coordinates = souvenir.position,
+                color = souvenir.color.color.asColor(),
+                onClick = {
+                          onEvent(SouvenirUIEvent.OnFetchCurrentLocation)
+                },
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            ImagePreviewSection(
-                imageUris = selectedImageUris,
-                onSelectImages = {
-                    multiplePhotoPickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                },
-                selectedColor = souvenir.color.color.asColor(),
-                modifier = modifier
-            )
-
-
+            LinkSection(souvenir.link?:"", onEvent, modifier = Modifier.padding(horizontal = 16.dp))
         }
+    }
+}
+
+@Composable
+private fun LinkSection(
+    value: String,
+    onEvent: (SouvenirUIEvent) -> Unit,
+    modifier: Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            stringResource(R.string.link), style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        DefaultTextFieldView(
+            value = value,
+            placeHolder = stringResource(R.string.please_enter_a_valid_url),
+            onValueChange = {
+                onEvent(SouvenirUIEvent.OnLinkChanged(it))
+
+            },
+            modifier = Modifier
+        )
     }
 }
 
@@ -328,8 +358,10 @@ fun ImagePreviewSection(
 @Composable
 fun AttachmentsSection(
     modifier: Modifier = Modifier,
+    imageUris: List<Uri> = emptyList(),
     pickPhotos: () -> Unit ,
 ){
+    val context = LocalContext.current
     Column(
         modifier = modifier
     ) {
@@ -352,7 +384,14 @@ fun AttachmentsSection(
             IconButtonView(
                 icon = Icons.Filled.MyLocation,
                 text = "Location",
-                onClick = {}
+                onClick = {
+                    if(imageUris.isNotEmpty()) {
+                        val location = LocationUtils.getImageLocation(context, imageUris.first())
+                        Toast.makeText(context, location.toString(), Toast.LENGTH_SHORT).show()
+                    }else{
+                        Toast.makeText(context, "No image selected", Toast.LENGTH_SHORT).show()
+                    }
+                }
             )
             IconButtonView(
                 icon = Icons.Filled.InsertLink,
@@ -646,7 +685,10 @@ private fun QuestionSection(
             style = MaterialTheme.typography
             .titleMedium)
         Spacer(Modifier.height(12.dp))
-        Row {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
                 onClick = { }) {
@@ -915,8 +957,8 @@ fun BottomPagerViewPreview(){
 @Preview(showBackground = true)
 fun AddSouvenirWidgetPreview() {
     IFatalikuTheme {
-        AddSouvenirWidget(souvenir = souvenirs.first(),
-            onClose = {}, onSave = {}, onEvent = {}
+        AddSouvenirWidget(onClose = {},
+            onSave = {}, onEvent = {}, souvenir = souvenirs.first(), viewModelEvent = flow {  }
         )
     }
 }
@@ -925,8 +967,8 @@ fun AddSouvenirWidgetPreview() {
 @Preview(showBackground = true)
 fun AddSouvenirWidgetDarkPreview() {
     IFatalikuTheme(darkTheme = true) {
-        AddSouvenirWidget(souvenir = souvenirs.first(),
-            onClose = {}, onSave = {}, onEvent = {}
+        AddSouvenirWidget(onClose = {},
+            onSave = {}, onEvent = {}, souvenir = souvenirs.first(), viewModelEvent = flow {  }
         )
     }
 }
