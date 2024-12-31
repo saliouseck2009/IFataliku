@@ -9,7 +9,7 @@ class MainViewModel: ViewModel() {
     val visiblePermissionDialogQueue = mutableStateListOf<String>()
 
     fun dismissDialog() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) { // R is API level 30
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             visiblePermissionDialogQueue.removeFirst()
         } else {
             if (visiblePermissionDialogQueue.isNotEmpty()) {

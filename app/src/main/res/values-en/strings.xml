@@ -30,4 +30,9 @@
     <string name="location_not_found">Location not found</string>
     <string name="please_enter_a_valid_url">Please enter a valid URL</string>
     <string name="link">Link</string>
+    <string name="at">at</string>
+    <string name="unfavorite">Unfavorite</string>
+    <string name="favorite">Favorite</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>

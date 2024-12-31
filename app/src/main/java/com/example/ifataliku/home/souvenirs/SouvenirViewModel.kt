@@ -6,10 +6,9 @@ import com.example.ifataliku.R
 import com.example.ifataliku.core.di.UiText
 import com.example.ifataliku.domain.entities.Coordinates
 import com.example.ifataliku.domain.entities.Souvenir
-import com.example.ifataliku.domain.entities.TitleEmoji
 import com.example.ifataliku.domain.repository.LocationTrackerRepo
-import com.example.ifataliku.domain.usecase.AddNewSouvenirUseCase
 import com.example.ifataliku.domain.usecase.GetAllSouvenirsUseCase
+import com.example.ifataliku.domain.usecase.SouvenirUseCase
 import com.example.ifataliku.home.reflection.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -24,13 +23,13 @@ import javax.inject.Inject
 @HiltViewModel
 class SouvenirViewModel @Inject constructor(
     private val getAllSouvenirsUseCase: GetAllSouvenirsUseCase,
-    private val addNewSouvenirUseCase: AddNewSouvenirUseCase,
+    private val souvenirUseCase: SouvenirUseCase,
     private val locationTrackerRepo: LocationTrackerRepo,
 ) : ViewModel(){
     private val  _state : MutableStateFlow<SouvenirState> = MutableStateFlow(SouvenirState.Loading)
     val state = _state.asStateFlow()
     private val _souvenirStateData : MutableStateFlow<SouvenirStateData> =
-        MutableStateFlow(SouvenirStateData(emptyList()))
+        MutableStateFlow(SouvenirStateData(souvenirs = emptyList(), souvenirsMap =  emptyMap()))
     val souvenirStateData = _souvenirStateData.asStateFlow()
     private val _viewModelEvent = Channel<SouvenirViewModelEvent>()
     val viewModelEvent = _viewModelEvent.receiveAsFlow()
@@ -45,18 +44,19 @@ class SouvenirViewModel @Inject constructor(
         description = "",
         date = LocalDate.now().toString(),
         time = "",
-        categories = listOf(Category("📖", "Education")),
+        category = Category("📖", "Education"),
         color = AppData.colorItems.first(),
-        feeling = TitleEmoji("🙂", "Good"),
+        feeling = Category("🙂", "Good"),
         images = emptyList()
     )
 
     private fun initPageData() {
         viewModelScope.launch {
-            delay(1000)
+            delay(500)
             _state.value = SouvenirState.Loading
             getAllSouvenirsUseCase().let {
-                _souvenirStateData.value = SouvenirStateData(it)
+                _souvenirStateData.value = SouvenirStateData(souvenirs = it.first, souvenirsMap =
+                it.second)
                 _state.value = SouvenirState.Success
             }
 
@@ -82,10 +82,9 @@ class SouvenirViewModel @Inject constructor(
             is SouvenirUIEvent.OnCategorySelected -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(categories = listOf(
+                        souvenir = _souvenirStateData.value.souvenir?.copy(category =
                                 event.category,
-                        ))
-
+                        )
                     )
                 }
             }
@@ -136,8 +135,7 @@ class SouvenirViewModel @Inject constructor(
                     _souvenirStateData.value.souvenir?.let {
                         if(
                             it.title.isNotEmpty() && it.date.isNotEmpty()){
-                            //add souvenir to list
-                            addNewSouvenirUseCase.invoke(it)
+                            souvenirUseCase.createSouvenir.invoke(it)
                             _souvenirStateData.value = _souvenirStateData.value.copy(souvenir = null)
 
                         }else{
@@ -196,6 +194,22 @@ class SouvenirViewModel @Inject constructor(
                 }
             }
 
+            is SouvenirUIEvent.OnDeleteSouvenir -> {
+                viewModelScope.launch {
+
+                }
+            }
+            is SouvenirUIEvent.OnEditSouvenir -> {
+                viewModelScope.launch {
+                    _souvenirStateData.value = _souvenirStateData.value.copy(souvenir = event.souvenir)
+                    _viewModelEvent.send(SouvenirViewModelEvent.OpenAddSouvenir)
+                }
+            }
+            is SouvenirUIEvent.OnToggleFavourite -> {
+                viewModelScope.launch {
+
+                }
+            }
         }
     }
 }

@@ -33,10 +33,17 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val permissionsToRequest =if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q) arrayOf(
-        Manifest.permission.ACCESS_MEDIA_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION
-    )else{
-        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+    private val permissionsToRequest =if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q) {
+        arrayOf(
+            Manifest.permission.ACCESS_MEDIA_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+    } else{
+        arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +96,9 @@ class MainActivity : ComponentActivity() {
                                     MediaLocationPermissionTextProvider()
                                 }
                                 Manifest.permission.ACCESS_FINE_LOCATION -> {
+                                    LocationPermissionTextProvider()
+                                }
+                                Manifest.permission.ACCESS_COARSE_LOCATION -> {
                                     LocationPermissionTextProvider()
                                 }
 
