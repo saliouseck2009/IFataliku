@@ -34,6 +34,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,6 +53,7 @@ import com.example.ifataliku.core.di.LocationUtils.getImageLocation
 import com.example.ifataliku.core.di.ObserveAsEvents
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.domain.entities.souvenirs
+import com.example.ifataliku.home.souvenir_detail.SouvenirDetailSheet
 import com.example.ifataliku.widgets.ErrorWidget
 import com.example.ifataliku.widgets.LoadingPage
 import com.example.ifataliku.widgets.SouvenirListItemView
@@ -91,70 +93,6 @@ fun SouvenirPage(
 
 }
 
-@Composable
-fun SelectAndRetrieveImageLocation() {
-    val context = LocalContext.current
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri ->
-            imageUri = uri
-        }
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(onClick = { launcher.launch("image/*") }) {
-            Text("Select Image")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        imageUri?.let {
-            RetrieveImageLocation(uri = it, context = context)
-        }
-    }
-}
-@Composable
-fun RetrieveImageLocation(uri: Uri?, context: Context) {
-    // Mutable state to hold the extracted location
-    var location by remember { mutableStateOf<Pair<Double?, Double?>>(Pair(null,null)) }
-
-    // Button to trigger location extraction
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(onClick = {
-            uri?.let {
-                // Retrieve location metadata from the image
-                location = getImageLocation(context, uri)
-                println("location: $location")
-            }
-        }) {
-            Text("Retrieve Image Location")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Display the extracted location
-        Text(
-            text = location.toString() ?: "No location data found",
-            style = MaterialTheme.typography.bodySmall,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
 
 
 
@@ -179,6 +117,31 @@ private fun PageContent(
             is SouvenirViewModelEvent.ShowMessage -> {
                 Toast.makeText(context, event.message.asString(context), Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+    val detailSouvenirSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showDetailSouvenirBottomSheet by remember { mutableStateOf(false) }
+    var selectedTab by remember { mutableIntStateOf(0) }
+    if (showDetailSouvenirBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showDetailSouvenirBottomSheet = false
+            },
+            sheetState = detailSouvenirSheetState,
+        ){
+            SouvenirDetailSheet(
+                souvenirs =data.souvenirs ,
+                currentPage = selectedTab,
+                onClose = {
+                    showDetailSouvenirBottomSheet = false
+                },
+                onEvent = onEvent,
+                onEdit = { souvenir ->
+
+
+                }
+
+            )
         }
     }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -215,12 +178,16 @@ private fun PageContent(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-//            SelectAndRetrieveImageLocation()
-//            Spacer(modifier = Modifier.height(16.dp))
-            data.souvenirs
+            data.souvenirsMap
                 .forEach { (month, souvenirs) ->
                     Spacer(modifier = Modifier.height(16.dp))
-                    SouvenirListItemView(items = souvenirs, dateTitle = month)
+                    SouvenirListItemView(
+                        items = souvenirs,
+                        dateTitle = month,
+                        onItemClick  = {selectedSouvenir ->
+                            selectedTab = data.souvenirs.indexOf(selectedSouvenir)
+                            showDetailSouvenirBottomSheet = true
+                        })
                     Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -251,39 +218,34 @@ private fun PageContent(
             }
         }
     }
+
 }
 
 @Composable
 @Preview(showBackground = true)
 fun SouvenirPagePreview() {
-    val data = souvenirs
-        .groupBy { Utils.getDateFromString(it.date).month.name }
-        .map { (month, souvenirs) ->
-            Pair(month, souvenirs)
-        }
+    val data =Utils.groupAndSortSouvenirs(souvenirs)
+
     SouvenirPage(
         viewModelEvent = flow {  },
         state = SouvenirState.Success,
-        data = SouvenirStateData(souvenirs = data),
+        data = SouvenirStateData(souvenirs = data.first, souvenirsMap = data.second),
         onEvent = {  },
         addSouvenirViewModelEvent = flow {  },
 
-    )
+        )
 }
 
 @Composable
 @Preview(showBackground = true)
 fun SouvenirPageDarkPreview() {
     IFatalikuTheme(darkTheme = true) {
-        val data = souvenirs
-            .groupBy { Utils.getDateFromString(it.date).month.name }
-            .map { (month, souvenirs) ->
-                Pair(month, souvenirs)
-            }
+        val data =Utils.groupAndSortSouvenirs(souvenirs)
+
         SouvenirPage(
             viewModelEvent = flow {  },
             state = SouvenirState.Success,
-            data = SouvenirStateData(souvenirs = data),
+            data = SouvenirStateData(souvenirs = data.first, souvenirsMap = data.second),
             onEvent = {  },
             addSouvenirViewModelEvent = flow {  },
 

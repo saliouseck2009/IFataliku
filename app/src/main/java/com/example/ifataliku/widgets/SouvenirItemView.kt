@@ -1,6 +1,7 @@
 package com.example.ifataliku.widgets
 
 import IFatalikuTheme
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,7 @@ import com.example.ifataliku.home.souvenirs.AppData
 @Composable
 fun SouvenirItemView(
     souvenir: Souvenir,
+    onClick: () -> Unit,
     modifier : Modifier = Modifier
 ) {
     val randomRotateAngle = listOf(45f,90f,135f,180f).random()
@@ -45,6 +47,7 @@ fun SouvenirItemView(
         modifier = modifier
             .height(100.dp)
             .padding(4.dp)
+            .clickable(onClick = onClick)
     ) {
             Row(
                 verticalAlignment = Alignment.Top,
@@ -144,13 +147,14 @@ private fun AdditionalInfoPreview(souvenir: Souvenir) {
 @Composable
 @Preview(showBackground = true)
 fun SouvenirItemViewPreview() {
-    SouvenirItemView(souvenir = souvenirs[0])
+    SouvenirItemView(souvenir = souvenirs[0], onClick = {})
 }
 
 @Composable
 fun SouvenirListItemView(
     dateTitle: String,
     items: List<Souvenir>,
+    onItemClick: (Souvenir) -> Unit ,
     modifier : Modifier = Modifier) {
     Column(modifier = modifier){
         Row(
@@ -168,8 +172,10 @@ fun SouvenirListItemView(
                 color = Color.Gray
                 )
         }
-        items.forEach {
-            SouvenirItemView(it)
+        items.forEachIndexed { _, it ->
+            SouvenirItemView(it, onClick = {
+                onItemClick(it)
+            })
         }
 
 
@@ -205,7 +211,7 @@ fun RoundedCardTextPreview(){
 @Preview(showBackground = true)
 fun SouvenirListItemViewPreview() {
     IFatalikuTheme {
-        SouvenirListItemView( "February", souvenirs)
+        SouvenirListItemView( "February", souvenirs, onItemClick = {})
     }
 }
 
@@ -213,6 +219,6 @@ fun SouvenirListItemViewPreview() {
 @Preview(showBackground = true)
 fun SouvenirListItemViewDarkPreview() {
     IFatalikuTheme(darkTheme = true) {
-        SouvenirListItemView("February", souvenirs)
+        SouvenirListItemView("February", souvenirs, onItemClick = {})
     }
 }

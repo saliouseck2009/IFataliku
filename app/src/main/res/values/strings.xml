@@ -29,4 +29,9 @@
     <string name="location_not_found">Position non disponible</string>
     <string name="link">Lien</string>
     <string name="please_enter_a_valid_url">Veuillez saisir une URL valide</string>
+    <string name="at">à</string>
+    <string name="unfavorite">Ne pas aimer</string>
+    <string name="favorite">Aimer</string>
+    <string name="edit">Modifier</string>
+    <string name="delete">Supprimer</string>
 </resources>

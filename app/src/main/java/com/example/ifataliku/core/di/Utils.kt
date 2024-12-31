@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.ExifInterface
 import android.net.Uri
 import androidx.compose.ui.graphics.Color
+import com.example.ifataliku.domain.entities.Souvenir
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -11,6 +12,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Locale
 
 object Utils {
     fun getCurrentDate(format: String = "dd MMM yyyy"): String {
@@ -18,10 +20,10 @@ object Utils {
         return formatter.format(Date())
     }
 
-    fun getFormattedDate(date: String): String {
+    fun getFormattedDate(date: String, outputFormat: String = "dd MMM yyyy"): String {
         val format = SimpleDateFormat("yyyy-MM-dd")
         val date = format.parse(date)
-        val formatter = SimpleDateFormat("dd MMM yyyy")
+        val formatter = SimpleDateFormat(outputFormat)
         return formatter.format(date)
     }
 
@@ -49,6 +51,23 @@ object Utils {
             "FF${hexStringColor}"
                 .toLong(radix = 16).toInt()
         )
+    }
+
+    fun groupAndSortSouvenirs(souvenirs: List<Souvenir>): Pair<List<Souvenir>, Map<String, List<Souvenir>>> {
+        // Define date formatter for parsing and grouping
+        val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val monthYearFormatter = SimpleDateFormat("MMM yyyy", Locale.getDefault())
+
+        // Parse and sort the souvenirs by date descending
+        val sortedList = souvenirs.sortedByDescending { dateFormatter.parse(it.date) }
+
+        // Group the sorted list by "MMM yyyy"
+        val groupedByMonthYear = sortedList.groupBy {
+            val date = dateFormatter.parse(it.date)
+            monthYearFormatter.format(date!!)
+        }
+
+        return Pair(sortedList, groupedByMonthYear)
     }
 
 

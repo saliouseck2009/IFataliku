@@ -3,7 +3,9 @@ package com.example.ifataliku.core.di
 import android.app.Application
 import android.content.Context
 import com.example.ifataliku.data.repository.LocationTrackerRepoImpl
+import com.example.ifataliku.data.repository.SouvenirRepoImpl
 import com.example.ifataliku.domain.repository.LocationTrackerRepo
+import com.example.ifataliku.domain.repository.SouvenirRepo
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.Module
@@ -38,6 +40,11 @@ object AppModule {
         fusedLocationProviderClient = fusedLocationProviderClient,
         application = context
     )
+
+    @Provides
+    fun provideSouvenirRepo(): SouvenirRepo {
+        return SouvenirRepoImpl()
+    }
 
 
 

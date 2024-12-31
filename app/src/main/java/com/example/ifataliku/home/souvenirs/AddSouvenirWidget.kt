@@ -38,7 +38,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -76,11 +75,10 @@ import com.example.ifataliku.core.di.LocationUtils
 import com.example.ifataliku.core.di.ObserveAsEvents
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.core.di.asColor
-import com.example.ifataliku.domain.entities.Coordinates
 import com.example.ifataliku.domain.entities.Souvenir
-import com.example.ifataliku.domain.entities.TitleEmoji
 import com.example.ifataliku.domain.entities.souvenirs
 import com.example.ifataliku.home.reflection.Category
+import com.example.ifataliku.widgets.CircularIconView
 import com.example.ifataliku.widgets.ColorItemWidget
 import com.example.ifataliku.widgets.DatePickerWidget
 import com.example.ifataliku.widgets.EmojiPicker
@@ -107,7 +105,6 @@ fun AddSouvenirWidget(
         when (event) {
             is AddSouvenirViewModelEvent.RetrieveImageLocation -> {
                 val location = LocationUtils.getImageLocation(context, event.uri)
-                Toast.makeText(context, location.toString(), Toast.LENGTH_SHORT).show()
                 onEvent(SouvenirUIEvent.OnLocationSelected(lat = location.first, lng = location.second))
             }
         }
@@ -180,7 +177,7 @@ fun AddSouvenirWidget(
             ) {
                 TitledItemSection(
                     title = stringResource(R.string.category),
-                    value = souvenir.categories.first().emoji + " " + souvenir.categories.first().title,
+                    value = souvenir.category.emoji + " " + souvenir.category.title,
                     onClick = {
                         selectedTab = 0
                         showBottomSheet = true
@@ -387,7 +384,6 @@ fun AttachmentsSection(
                 onClick = {
                     if(imageUris.isNotEmpty()) {
                         val location = LocationUtils.getImageLocation(context, imageUris.first())
-                        Toast.makeText(context, location.toString(), Toast.LENGTH_SHORT).show()
                     }else{
                         Toast.makeText(context, "No image selected", Toast.LENGTH_SHORT).show()
                     }
@@ -495,9 +491,9 @@ fun GridItemSectionPreview() {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GridItemSection(
-    items: List<Category>,
+    items: List<com.example.ifataliku.home.reflection.Category>,
     selectedItem: String,
-    onValueChanged: (value: Category) -> Unit,
+    onValueChanged: (value: com.example.ifataliku.home.reflection.Category) -> Unit,
     modifier: Modifier = Modifier
 ){
     Column(modifier = modifier.fillMaxWidth()
@@ -540,8 +536,8 @@ fun GridItemSection(
 
 @Composable
 private fun FeelingPicker(
-    selectedEmoji: TitleEmoji,
-    onValueChange: (TitleEmoji) -> Unit,
+    selectedEmoji:Category,
+    onValueChange: (Category) -> Unit,
     modifier: Modifier = Modifier
 ){
     val emojis  = AppData.emojis
@@ -574,7 +570,7 @@ private fun FeelingPicker(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EmojiPickerItem(
-    emoji: TitleEmoji,
+    emoji: Category,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -746,21 +742,7 @@ private fun Header(
             .padding(16.dp)
             .fillMaxWidth(),
     ){
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(40.dp)
-                .border(1.dp, color = Color.Transparent, shape = CircleShape)
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant,
-                    shape = CircleShape
-                )
-
-        ) {
-            IconButton(onClick = onClose) {
-                Icon(Icons.Filled.Close, contentDescription = "Add Souvenir")
-            }
-        }
+        CircularIconView(onClose)
         Text(text = stringResource(R.string.nouveau_souvenir),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),)
         Box(
@@ -780,6 +762,7 @@ private fun Header(
         }
     }
 }
+
 
 
 
@@ -814,7 +797,7 @@ fun BottomPagerView(
                     0 -> {
                         GridItemSection(
                             items = AppData.categories,
-                            selectedItem = souvenir.categories.first().title,
+                            selectedItem = souvenir.category.title,
                             onValueChanged = {
                                 onEvent(SouvenirUIEvent.OnCategorySelected(it))
                             },

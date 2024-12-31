@@ -1,10 +1,8 @@
 package com.example.ifataliku.home.souvenirs
 
 import android.net.Uri
-import androidx.compose.runtime.remember
 import com.example.ifataliku.core.di.UiText
 import com.example.ifataliku.domain.entities.Souvenir
-import com.example.ifataliku.domain.entities.TitleEmoji
 import com.example.ifataliku.home.reflection.Category
 
 sealed interface SouvenirState {
@@ -14,7 +12,8 @@ sealed interface SouvenirState {
 }
 
 data class SouvenirStateData(
-    val souvenirs: List<Pair<String, List<Souvenir>>>,
+    val souvenirsMap:  Map<String, List<Souvenir>>,
+    val souvenirs: List<Souvenir>,
     val souvenir: Souvenir? = null
 )
 
@@ -31,9 +30,9 @@ sealed interface SouvenirUIEvent {
     data object InitPageData : SouvenirUIEvent
     data object OpenAddSouvenir : SouvenirUIEvent
     data class OnEmojiSelected(val emoji: String) : SouvenirUIEvent
-    data class OnCategorySelected(val category: Category) : SouvenirUIEvent
+    data class OnCategorySelected(val category: com.example.ifataliku.home.reflection.Category) : SouvenirUIEvent
     data class OnColorSelected(val color: LabelledColor) : SouvenirUIEvent
-    data class OnFeelingSelected(val feeling: TitleEmoji) : SouvenirUIEvent
+    data class OnFeelingSelected(val feeling: Category) : SouvenirUIEvent
     data class OnImageSelected(val images: List<Uri>) : SouvenirUIEvent
     data class OnTitleChanged(val title: String) : SouvenirUIEvent
     data class OnDescriptionChanged(val description: String) : SouvenirUIEvent
@@ -42,6 +41,10 @@ sealed interface SouvenirUIEvent {
     data class OnLocationSelected(val lat: Double?, val lng: Double?) : SouvenirUIEvent
     data object OnFetchCurrentLocation : SouvenirUIEvent
     data class OnLinkChanged(val link: String) : SouvenirUIEvent
+    data class OnToggleFavourite(val souvenir: Souvenir) : SouvenirUIEvent
+    data class OnDeleteSouvenir(val souvenir: Souvenir) : SouvenirUIEvent
+    data class OnEditSouvenir(val souvenir: Souvenir) : SouvenirUIEvent
+
 }
 
 class AppData {
@@ -88,11 +91,11 @@ class AppData {
             Category("🌳", "Nature"),
         )
         val emojis  =  listOf(
-            TitleEmoji("😩", "Terrible"),
-            TitleEmoji("☹️️", "Bad"),
-            TitleEmoji("😐", "Okay"),
-            TitleEmoji("🙂", "Good"),
-            TitleEmoji("😄", "Awesome"),
+            Category("😩", "Terrible"),
+            Category("☹️️", "Bad"),
+            Category("😐", "Okay"),
+            Category("🙂", "Good"),
+            Category("😄", "Awesome"),
         )
     }
 }
