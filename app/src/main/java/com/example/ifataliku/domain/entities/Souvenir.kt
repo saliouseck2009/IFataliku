@@ -4,7 +4,6 @@ import android.net.Uri
 import com.example.ifataliku.home.reflection.Category
 import com.example.ifataliku.home.souvenirs.AppData
 import com.example.ifataliku.home.souvenirs.LabelledColor
-import java.util.UUID
 
 data class Souvenir(
     val id: String ="",
@@ -18,7 +17,8 @@ data class Souvenir(
     val feeling: Category,
     val images: List<Uri>,
     val isFavorite: Boolean = false,
-    val link: String? = "https://news.google.com/",
+   // val link: String? ="", // "https://news.google.com/",
+    val link: String? =  "https://news.google.com/",
     val position: Coordinates? = null,
     val attachments: List<String> = emptyList()
 )

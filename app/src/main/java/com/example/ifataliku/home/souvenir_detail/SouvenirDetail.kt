@@ -1,7 +1,10 @@
 package com.example.ifataliku.home.souvenir_detail
 
 import IFatalikuTheme
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +16,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
@@ -28,6 +33,7 @@ import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -51,10 +57,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.core.di.asColor
@@ -70,7 +78,7 @@ import com.example.ifataliku.widgets.StaticMapView
 @Preview(showBackground = true)
 fun PreviewSouvenirDetail(){
     IFatalikuTheme {
-        SouvenirDetail(souvenir = souvenirs.first(), onClose = {}, onEvent = {}, onEdit = {})
+        SouvenirDetail(souvenir = souvenirs.first(), onClose = {}, onEvent = {}, )
     }
 }
 
@@ -78,7 +86,7 @@ fun PreviewSouvenirDetail(){
 @Preview(showBackground = true)
 fun PreviewSouvenirDetailDark(){
     IFatalikuTheme(darkTheme = true) {
-        SouvenirDetail(souvenir = souvenirs.first(), onClose = {}, onEvent = {}, onEdit = {})
+        SouvenirDetail(souvenir = souvenirs.first(), onClose = {}, onEvent = {}, )
     }
 }
 
@@ -87,7 +95,6 @@ fun SouvenirDetailSheet(
     souvenirs: List<Souvenir>,
     currentPage: Int,
     onClose: () -> Unit,
-    onEdit: (Souvenir) -> Unit,
     onEvent: (SouvenirUIEvent) -> Unit,
 ){
     val pagerState = rememberPagerState(pageCount = {
@@ -102,8 +109,7 @@ fun SouvenirDetailSheet(
         modifier = Modifier.fillMaxHeight()
     ) {
         HorizontalPager(state = pagerState) {
-            SouvenirDetail(souvenir = souvenirs[it], onClose = onClose, onEvent = onEvent, onEdit
-            = onEdit)
+            SouvenirDetail(souvenir = souvenirs[it], onClose = onClose, onEvent = onEvent)
             
         }
     }
@@ -112,7 +118,7 @@ fun SouvenirDetailSheet(
 @Composable
 fun SouvenirDetail(souvenir: Souvenir,
                    onClose: () -> Unit, onEvent: (SouvenirUIEvent) -> Unit,
-                   onEdit: (Souvenir) -> Unit){
+                   ){
     val surfaceColor = MaterialTheme.colorScheme.surface
     val randomRotateAngle = listOf(45f,90f,135f,180f).random()
     val morphProgress = listOf(0.0f,0.1f,0.2f,0.3f).random()
@@ -272,11 +278,47 @@ fun SouvenirDetail(souvenir: Souvenir,
             )
             Spacer(modifier = Modifier.height(8.dp))
             if (souvenir.link.isNullOrBlank().not()) {
-            UrlLauncherView(souvenir.link?:"", souvenir.color.color.asColor())
-                }
+                UrlLauncherView(souvenir.link?:"", souvenir.color.color.asColor())
+            }
+            if(souvenir.images.isNotEmpty()){
+                ImagePreviewSection(
+                    imageUris = souvenir.images,
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
         }
     }
 }
+
+@Composable
+fun ImagePreviewSection(
+    modifier: Modifier = Modifier,
+    imageUris: List<Uri>,
+) {
+    Column {
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = modifier
+                .padding(16.dp)
+                .horizontalScroll(rememberScrollState())
+                .fillMaxWidth()
+        ) {
+            imageUris.forEach { uri ->
+                Card{
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = null,
+                        modifier = Modifier.size(150.dp, 150.dp),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun UrlLauncherView(
@@ -285,7 +327,7 @@ private fun UrlLauncherView(
 ) {
     val launcher = LocalUriHandler.current
     Surface(
-        onClick ={
+        onClick = {
              launcher.openUri(link)
         },
         color = MaterialTheme.colorScheme.surfaceVariant,

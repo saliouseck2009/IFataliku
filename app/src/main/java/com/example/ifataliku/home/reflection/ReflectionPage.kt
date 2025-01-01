@@ -17,9 +17,17 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,7 +41,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
@@ -47,6 +58,8 @@ import com.example.ifataliku.NavigationDestination
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.home.souvenirs.AppData
+import com.example.ifataliku.home.souvenirs.SouvenirDestination
+import com.example.ifataliku.home.souvenirs.SouvenirUIEvent
 import com.example.ifataliku.widgets.CategoryView
 import com.example.ifataliku.widgets.SmallCategoryGridView
 
@@ -99,22 +112,46 @@ class FunShape(
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReflectionPage(
 ) {
     val dayOfToday = Utils.getCurrentDate()
-    Scaffold {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
+    val topAppBarTextSize = 28.sp
+
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            MediumTopAppBar(
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                ),
+                scrollBehavior = scrollBehavior,
+                title = {
+                    Text(
+                        text = dayOfToday,
+                        fontSize =if (scrollBehavior.state.collapsedFraction == 0f)
+                            topAppBarTextSize else 16.sp,
+                        textAlign =if (scrollBehavior.state.collapsedFraction == 0f)
+                            TextAlign.Start
+                        else TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
+                    )
+                },
+                navigationIcon = {},
+                actions = {}
+            )
+        }) {
         Column(
             modifier = Modifier
                 .padding(it)
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            Spacer(modifier = Modifier.height(8.dp))
             LazyVerticalGrid(columns = GridCells.Fixed(2)) {
                 item(span = { GridItemSpan(2) }) {
                     Column(
@@ -122,14 +159,9 @@ fun ReflectionPage(
                             .fillMaxWidth()
                             .padding(4.dp)
                     ) {
-                        Text(
-                            dayOfToday,
-                            style = MaterialTheme.typography.displaySmall,
-                            fontWeight = FontWeight.Bold,
-                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            "My Reflection on life",
+                            stringResource(R.string.my_reflection_on_life),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight(600)
                             ),
@@ -158,7 +190,7 @@ fun ReflectionPage(
                     ) {
                         Spacer(modifier = Modifier.height(32.dp))
                         Text(
-                            "Categories",
+                            stringResource(R.string.categories),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight(600)
                             ),
@@ -201,8 +233,8 @@ fun TimeLineComposable(modifier:Modifier=Modifier){
             .drawBehind {
                 drawLine(
                     color = Color.Gray,
-                    start = Offset(size.width / 2, size.height/2),
-                    end = Offset(size.width / 2, size.height*1.18f),
+                    start = Offset(size.width / 2, size.height / 2),
+                    end = Offset(size.width / 2, size.height * 1.18f),
                     strokeWidth = 0.8f
                 )
 

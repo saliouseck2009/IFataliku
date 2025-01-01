@@ -4,6 +4,7 @@ import android.net.Uri
 import com.example.ifataliku.core.di.UiText
 import com.example.ifataliku.domain.entities.Souvenir
 import com.example.ifataliku.home.reflection.Category
+import java.time.LocalDate
 
 sealed interface SouvenirState {
     data object Loading : SouvenirState
@@ -14,11 +15,13 @@ sealed interface SouvenirState {
 data class SouvenirStateData(
     val souvenirsMap:  Map<String, List<Souvenir>>,
     val souvenirs: List<Souvenir>,
-    val souvenir: Souvenir? = null
+    val souvenir: Souvenir= AppData.initialSouvenir,
 )
 
 sealed interface SouvenirViewModelEvent {
     data object OpenAddSouvenir : SouvenirViewModelEvent
+    data object CloseAddSouvenir : SouvenirViewModelEvent
+    data object CloseSouvenirDetail : SouvenirViewModelEvent
     data class ShowMessage(val message: UiText) : SouvenirViewModelEvent
 }
 
@@ -30,7 +33,7 @@ sealed interface SouvenirUIEvent {
     data object InitPageData : SouvenirUIEvent
     data object OpenAddSouvenir : SouvenirUIEvent
     data class OnEmojiSelected(val emoji: String) : SouvenirUIEvent
-    data class OnCategorySelected(val category: com.example.ifataliku.home.reflection.Category) : SouvenirUIEvent
+    data class OnCategorySelected(val category: Category) : SouvenirUIEvent
     data class OnColorSelected(val color: LabelledColor) : SouvenirUIEvent
     data class OnFeelingSelected(val feeling: Category) : SouvenirUIEvent
     data class OnImageSelected(val images: List<Uri>) : SouvenirUIEvent
@@ -49,6 +52,7 @@ sealed interface SouvenirUIEvent {
 
 class AppData {
     companion object{
+
         val colorItems =  listOf(
             LabelledColor( label= "BlueBerry", color = "f72585"),
             LabelledColor( label= "Slate", color = "757B87"),
@@ -96,6 +100,17 @@ class AppData {
             Category("😐", "Okay"),
             Category("🙂", "Good"),
             Category("😄", "Awesome"),
+        )
+        val initialSouvenir = Souvenir(
+            emoji = "🎉",
+            title = "",
+            description = "",
+            date = LocalDate.now().toString(),
+            time = "",
+            category = Category("📖", "Education"),
+            color = colorItems.first(),
+            feeling = Category("🙂", "Good"),
+            images = emptyList()
         )
     }
 }

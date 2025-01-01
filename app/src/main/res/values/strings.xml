@@ -34,4 +34,8 @@
     <string name="favorite">Aimer</string>
     <string name="edit">Modifier</string>
     <string name="delete">Supprimer</string>
+    <string name="le_lien_n_est_pas_valide">Le lien n\'est pas valide</string>
+    <string name="veillez_remplir_le_titre">Veillez remplir le titre</string>
+    <string name="my_reflection_on_life">Ma réflexion sur la vie</string>
+    <string name="categories">Catégories</string>
 </resources>
