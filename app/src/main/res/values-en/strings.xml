@@ -35,4 +35,8 @@
     <string name="favorite">Favorite</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="le_lien_n_est_pas_valide">Link is not valid</string>
+    <string name="veillez_remplir_le_titre">Please fill in the title</string>
+    <string name="my_reflection_on_life">My Reflection on life</string>
+    <string name="categories">Categories</string>
 </resources>

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -107,6 +108,9 @@ private fun PageContent(
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val detailSouvenirSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showDetailSouvenirBottomSheet by remember { mutableStateOf(false) }
+    var selectedTab by remember { mutableIntStateOf(0) }
 
     val context = LocalContext.current
     ObserveAsEvents(flow = viewModelEvent) { event ->
@@ -117,11 +121,15 @@ private fun PageContent(
             is SouvenirViewModelEvent.ShowMessage -> {
                 Toast.makeText(context, event.message.asString(context), Toast.LENGTH_SHORT).show()
             }
+            SouvenirViewModelEvent.CloseAddSouvenir -> {
+                showBottomSheet = false
+            }
+            SouvenirViewModelEvent.CloseSouvenirDetail -> {
+                showDetailSouvenirBottomSheet = false
+            }
         }
     }
-    val detailSouvenirSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showDetailSouvenirBottomSheet by remember { mutableStateOf(false) }
-    var selectedTab by remember { mutableIntStateOf(0) }
+
     if (showDetailSouvenirBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -136,11 +144,6 @@ private fun PageContent(
                     showDetailSouvenirBottomSheet = false
                 },
                 onEvent = onEvent,
-                onEdit = { souvenir ->
-
-
-                }
-
             )
         }
     }
@@ -156,7 +159,12 @@ private fun PageContent(
                     title = {
                         Text(
                             text = stringResource(id = SouvenirDestination.titleRes),
-                            fontSize = topAppBarTextSize,
+                            fontSize =if (scrollBehavior.state.collapsedFraction == 0f)
+                                topAppBarTextSize else 16.sp,
+                            textAlign =if (scrollBehavior.state.collapsedFraction == 0f)
+                                TextAlign.Start
+                            else TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     },
                     navigationIcon = {},
@@ -180,7 +188,6 @@ private fun PageContent(
         ) {
             data.souvenirsMap
                 .forEach { (month, souvenirs) ->
-                    Spacer(modifier = Modifier.height(16.dp))
                     SouvenirListItemView(
                         items = souvenirs,
                         dateTitle = month,
@@ -207,7 +214,7 @@ private fun PageContent(
                     .padding(bottom = 10.dp)
             ) {
                 AddSouvenirWidget(
-                    souvenir = data.souvenir!!,
+                    souvenir = data.souvenir,
                     onClose = { showBottomSheet = false },
                     onSave = {
                         onEvent(SouvenirUIEvent.OnValidateNewSouvenir)
@@ -229,7 +236,8 @@ fun SouvenirPagePreview() {
     SouvenirPage(
         viewModelEvent = flow {  },
         state = SouvenirState.Success,
-        data = SouvenirStateData(souvenirs = data.first, souvenirsMap = data.second),
+        data = SouvenirStateData(souvenirs = data.first, souvenirsMap = data.second, souvenir =
+        AppData.initialSouvenir),
         onEvent = {  },
         addSouvenirViewModelEvent = flow {  },
 

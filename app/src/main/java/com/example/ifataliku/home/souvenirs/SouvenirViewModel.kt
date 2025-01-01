@@ -1,5 +1,7 @@
 package com.example.ifataliku.home.souvenirs
 
+import android.util.Patterns
+import android.webkit.URLUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ifataliku.R
@@ -29,7 +31,8 @@ class SouvenirViewModel @Inject constructor(
     private val  _state : MutableStateFlow<SouvenirState> = MutableStateFlow(SouvenirState.Loading)
     val state = _state.asStateFlow()
     private val _souvenirStateData : MutableStateFlow<SouvenirStateData> =
-        MutableStateFlow(SouvenirStateData(souvenirs = emptyList(), souvenirsMap =  emptyMap()))
+        MutableStateFlow(SouvenirStateData(souvenirs = emptyList(), souvenirsMap =  emptyMap(),
+            souvenir = AppData.initialSouvenir))
     val souvenirStateData = _souvenirStateData.asStateFlow()
     private val _viewModelEvent = Channel<SouvenirViewModelEvent>()
     val viewModelEvent = _viewModelEvent.receiveAsFlow()
@@ -38,17 +41,7 @@ class SouvenirViewModel @Inject constructor(
     init {
         initPageData()
     }
-    private val initialSouvenir = Souvenir(
-        emoji = "🎉",
-        title = "",
-        description = "",
-        date = LocalDate.now().toString(),
-        time = "",
-        category = Category("📖", "Education"),
-        color = AppData.colorItems.first(),
-        feeling = Category("🙂", "Good"),
-        images = emptyList()
-    )
+
 
     private fun initPageData() {
         viewModelScope.launch {
@@ -56,7 +49,7 @@ class SouvenirViewModel @Inject constructor(
             _state.value = SouvenirState.Loading
             getAllSouvenirsUseCase().let {
                 _souvenirStateData.value = SouvenirStateData(souvenirs = it.first, souvenirsMap =
-                it.second)
+                it.second, souvenir = AppData.initialSouvenir)
                 _state.value = SouvenirState.Success
             }
 
@@ -68,21 +61,22 @@ class SouvenirViewModel @Inject constructor(
             is SouvenirUIEvent.InitPageData -> initPageData()
             is SouvenirUIEvent.OpenAddSouvenir -> {
                 viewModelScope.launch {
-                    _souvenirStateData.value = _souvenirStateData.value.copy(souvenir = initialSouvenir)
+                    _souvenirStateData.value = _souvenirStateData.value.copy(souvenir = AppData
+                        .initialSouvenir)
                     _viewModelEvent.send(SouvenirViewModelEvent.OpenAddSouvenir)
                 }
             }
             is SouvenirUIEvent.OnEmojiSelected -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(emoji = event.emoji)
+                        souvenir = _souvenirStateData.value.souvenir.copy(emoji = event.emoji)
                     )
                 }
             }
             is SouvenirUIEvent.OnCategorySelected -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(category =
+                        souvenir = _souvenirStateData.value.souvenir.copy(category =
                                 event.category,
                         )
                     )
@@ -91,21 +85,21 @@ class SouvenirViewModel @Inject constructor(
             is SouvenirUIEvent.OnColorSelected -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(color = event.color)
+                        souvenir = _souvenirStateData.value.souvenir.copy(color = event.color)
                     )
                 }
             }
             is SouvenirUIEvent.OnFeelingSelected -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(feeling = event.feeling)
+                        souvenir = _souvenirStateData.value.souvenir.copy(feeling = event.feeling)
                     )
                 }
             }
             is SouvenirUIEvent.OnImageSelected -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(images = event.images)
+                        souvenir = _souvenirStateData.value.souvenir.copy(images = event.images)
                     )
                     if (event.images.isNotEmpty()) {
                         _addSouvenirViewModelEvent.send(
@@ -119,32 +113,41 @@ class SouvenirViewModel @Inject constructor(
             is SouvenirUIEvent.OnTitleChanged -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(title = event.title)
+                        souvenir = _souvenirStateData.value.souvenir.copy(title = event.title)
                     )
                 }
             }
             is SouvenirUIEvent.OnDateChanged -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(date = event.date)
+                        souvenir = _souvenirStateData.value.souvenir.copy(date = event.date)
                     )
                 }
             }
             is SouvenirUIEvent.OnValidateNewSouvenir -> {
                 viewModelScope.launch {
-                    _souvenirStateData.value.souvenir?.let {
-                        if(
-                            it.title.isNotEmpty() && it.date.isNotEmpty()){
-                            souvenirUseCase.createSouvenir.invoke(it)
-                            _souvenirStateData.value = _souvenirStateData.value.copy(souvenir = null)
-
-                        }else{
-                            viewModelScope.launch {
+                    _souvenirStateData.value.souvenir.let {
+                        if(it.link!=null && isValidUrl(it.link).not()){
                                 _viewModelEvent.send(SouvenirViewModelEvent.ShowMessage(
-                                    UiText.StringResource(R.string.veillez_remplir_tous_les_champs)
+                                    UiText.StringResource(R.string.le_lien_n_est_pas_valide)
                                 ))
-                            }
+                            return@launch
                         }
+                        if(it.title.isEmpty() ){
+                            _viewModelEvent.send(SouvenirViewModelEvent.ShowMessage(
+                                UiText.StringResource(R.string.veillez_remplir_le_titre)
+                            ))
+                            return@launch
+                        }
+                        if (it.id.isBlank()) {
+                            souvenirUseCase.createSouvenir(it)
+                        }else{
+                            souvenirUseCase.updateSouvenir(it)
+                        }
+                        _viewModelEvent.send(SouvenirViewModelEvent.CloseAddSouvenir)
+                        _souvenirStateData.value = _souvenirStateData.value.copy(souvenir =
+                        AppData.initialSouvenir)
+                        initPageData()
                     }
                 }
             }
@@ -152,14 +155,14 @@ class SouvenirViewModel @Inject constructor(
             is SouvenirUIEvent.OnDescriptionChanged -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(description = event.description)
+                        souvenir = _souvenirStateData.value.souvenir.copy(description = event.description)
                     )
                 }
             }
             is SouvenirUIEvent.OnLocationSelected -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(
+                        souvenir = _souvenirStateData.value.souvenir.copy(
                             position = if (event.lat != null && event.lng != null) {
                                 Coordinates(event.lat, event.lng)
                             } else {
@@ -174,7 +177,7 @@ class SouvenirViewModel @Inject constructor(
                     locationTrackerRepo.getCurrentLocation().let {
                         if (it != null){
                             _souvenirStateData.value = _souvenirStateData.value.copy(
-                                souvenir = _souvenirStateData.value.souvenir?.copy(
+                                souvenir = _souvenirStateData.value.souvenir.copy(
                                     position = Coordinates(it.latitude, it.longitude)
                                 )
                             )}
@@ -189,14 +192,16 @@ class SouvenirViewModel @Inject constructor(
             is SouvenirUIEvent.OnLinkChanged -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir?.copy(link = event.link)
+                        souvenir = _souvenirStateData.value.souvenir.copy(link = event.link)
                     )
                 }
             }
 
             is SouvenirUIEvent.OnDeleteSouvenir -> {
                 viewModelScope.launch {
-
+                    souvenirUseCase.deleteSouvenir(event.souvenir.id)
+                    _viewModelEvent.send(SouvenirViewModelEvent.CloseSouvenirDetail)
+                    initPageData()
                 }
             }
             is SouvenirUIEvent.OnEditSouvenir -> {
@@ -207,9 +212,14 @@ class SouvenirViewModel @Inject constructor(
             }
             is SouvenirUIEvent.OnToggleFavourite -> {
                 viewModelScope.launch {
-
+                    souvenirUseCase.updateSouvenir(event.souvenir.copy(isFavorite = !event.souvenir
+                        .isFavorite))
+                    initPageData()
                 }
             }
         }
+    }
+    private fun isValidUrl(url: String): Boolean {
+        return URLUtil.isValidUrl(url)
     }
 }

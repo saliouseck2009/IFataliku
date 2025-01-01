@@ -144,7 +144,7 @@ fun AddSouvenirWidget(
                     selectedImageUris = uris
                 }
             )
-            Header(onClose = onClose, onSave = onSave, chosenColor = souvenir.color.color)
+            Header(onClose = onClose, onSave = onSave)
             QuestionSection(
                 emoji = souvenir.emoji,
                 value = souvenir.title,
@@ -173,7 +173,6 @@ fun AddSouvenirWidget(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    //.padding(horizontal = 16.dp),
             ) {
                 TitledItemSection(
                     title = stringResource(R.string.category),
@@ -253,10 +252,9 @@ private fun LinkSection(
         )
         DefaultTextFieldView(
             value = value,
-            placeHolder = stringResource(R.string.please_enter_a_valid_url),
+            placeHolder = stringResource(R.string.please_enter_a_valid_url)+".ex: https://www.google.com",
             onValueChange = {
                 onEvent(SouvenirUIEvent.OnLinkChanged(it))
-
             },
             modifier = Modifier
         )
@@ -305,98 +303,8 @@ private fun DescriptionSection(
         modifier = modifier)
 }
 
-@Composable
-fun ImagePreviewSection(
-    modifier: Modifier = Modifier,
-    imageUris: List<Uri>,
-    selectedColor: Color,
-    onSelectImages: () -> Unit
-) {
-    Column {
-       if(imageUris.isNotEmpty()) Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()
-        ) {
-            Text("Images", style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Text("Edit", style = MaterialTheme.typography.bodyMedium,
-                color = selectedColor,
-                modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    .clickable { onSelectImages() }
-            )
-        }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier
-                .padding(16.dp)
-                .horizontalScroll(rememberScrollState())
-                .fillMaxWidth()
-        ) {
-            imageUris.forEach { uri ->
-                Card{
-                    AsyncImage(
-                        model = uri,
-                        contentDescription = null,
-                        modifier = Modifier.size(150.dp, 150.dp),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-            }
-        }
-    }
-}
 
-@Composable
-fun AttachmentsSection(
-    modifier: Modifier = Modifier,
-    imageUris: List<Uri> = emptyList(),
-    pickPhotos: () -> Unit ,
-){
-    val context = LocalContext.current
-    Column(
-        modifier = modifier
-    ) {
-        Text("Attachments", style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .padding(bottom = 16.dp, end = 8.dp)
-                .horizontalScroll(rememberScrollState())
-                .fillMaxWidth()
-        ) {
-            IconButtonView(
-                icon = Icons.Filled.PhotoCamera,
-                text = "Photos",
-                onClick = pickPhotos
-            )
-            IconButtonView(
-                icon = Icons.Filled.MyLocation,
-                text = "Location",
-                onClick = {
-                    if(imageUris.isNotEmpty()) {
-                        val location = LocationUtils.getImageLocation(context, imageUris.first())
-                    }else{
-                        Toast.makeText(context, "No image selected", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            )
-            IconButtonView(
-                icon = Icons.Filled.InsertLink,
-                text = "Link",
-                onClick = {}
-            )
-        }
-    }
-}
 
 @Composable
 fun IconButtonView(
@@ -693,9 +601,9 @@ private fun QuestionSection(
                     onEmojiSelected = { emoji ->
                         onEmojiChosen(emoji)
                     },
-                    size = 30,
+                    size = 35,
                     modifier = Modifier
-                        .size(50.dp)
+                        .size(55.dp)
                 )
             }
             DefaultTextFieldView(value,
@@ -717,13 +625,14 @@ Modifier = Modifier) {
                       Text(text =placeHolder, color = MaterialTheme.colorScheme.outline )
         },
         onValueChange = onValueChange,
+
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
         ), modifier = modifier
-            .height(50.dp)
+            //.height(50.dp)
             .fillMaxWidth()
     )
 }
@@ -732,7 +641,6 @@ Modifier = Modifier) {
 private fun Header(
     onClose: () -> Unit,
     onSave: () -> Unit,
-    chosenColor: String,
     modifier: Modifier = Modifier
 ){
     Row(

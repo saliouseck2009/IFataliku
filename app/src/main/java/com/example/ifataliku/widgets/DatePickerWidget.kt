@@ -17,7 +17,7 @@ fun DatePickerWidget(
     value: String,
     onValueChange: (String) -> Unit,
     pattern: String = "dd/MM/yyyy",
-    minDate: Long= Utils.getMillisDate(),
+    minDate: Long= 0,
     widgetDisplayer: @Composable (onClick: () -> Unit) -> Unit = {
         IconButton(onClick = it) {
             Icon(

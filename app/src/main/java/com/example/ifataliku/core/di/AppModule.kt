@@ -2,6 +2,7 @@ package com.example.ifataliku.core.di
 
 import android.app.Application
 import android.content.Context
+import com.example.ifataliku.data.datasource.SouvenirMemoryDataSource
 import com.example.ifataliku.data.repository.LocationTrackerRepoImpl
 import com.example.ifataliku.data.repository.SouvenirRepoImpl
 import com.example.ifataliku.domain.repository.LocationTrackerRepo
@@ -40,10 +41,15 @@ object AppModule {
         fusedLocationProviderClient = fusedLocationProviderClient,
         application = context
     )
-
+    @Singleton
     @Provides
-    fun provideSouvenirRepo(): SouvenirRepo {
-        return SouvenirRepoImpl()
+    fun provideSouvenirRepo(souvenirMemoryDataSource: SouvenirMemoryDataSource): SouvenirRepo {
+        return SouvenirRepoImpl(souvenirMemoryDataSource)
+    }
+    @Singleton
+    @Provides
+    fun provideSouvenirMemoryDataSource(): SouvenirMemoryDataSource {
+        return SouvenirMemoryDataSource()
     }
 
 
