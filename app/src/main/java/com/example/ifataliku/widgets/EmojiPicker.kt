@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ifataliku.core.di.capitalizeWords
@@ -28,10 +29,10 @@ import com.makeappssimple.abhimanyu.composeemojipicker.ComposeEmojiPickerEmojiUI
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmojiPicker(
+    modifier: Modifier = Modifier,
     size: Int = 30,
     selectedEmoji: String = "🎉",
     onEmojiSelected: (String) -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(
@@ -42,7 +43,7 @@ fun EmojiPicker(
         mutableStateOf(false)
     }
     var searchText by remember {
-        mutableStateOf("")
+        mutableStateOf(" ")
     }
 
     if (isModalBottomSheetVisible) {
@@ -52,7 +53,7 @@ fun EmojiPicker(
             tonalElevation = 0.dp,
             onDismissRequest = {
                 isModalBottomSheetVisible = false
-                searchText = ""
+                searchText = " "
             },
             dragHandle = null,
         ) {
@@ -61,6 +62,7 @@ fun EmojiPicker(
                     .fillMaxSize(),
             ) {
                 ComposeEmojiPickerBottomSheetUI(
+                    groupTitleTextStyle = MaterialTheme.typography.titleMedium,
                     searchBarColor = MaterialTheme.colorScheme.surface,
                     onEmojiClick = { emoji ->
                         isModalBottomSheetVisible = false

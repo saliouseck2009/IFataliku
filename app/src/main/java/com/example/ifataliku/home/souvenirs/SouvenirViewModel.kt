@@ -45,7 +45,7 @@ class SouvenirViewModel @Inject constructor(
 
     private fun initPageData() {
         viewModelScope.launch {
-            delay(500)
+           // delay(500)
             _state.value = SouvenirState.Loading
             getAllSouvenirsUseCase().let {
                 _souvenirStateData.value = SouvenirStateData(souvenirs = it.first, souvenirsMap =

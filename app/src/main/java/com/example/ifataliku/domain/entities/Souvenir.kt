@@ -4,6 +4,7 @@ import android.net.Uri
 import com.example.ifataliku.home.reflection.Category
 import com.example.ifataliku.home.souvenirs.AppData
 import com.example.ifataliku.home.souvenirs.LabelledColor
+import java.util.UUID
 
 data class Souvenir(
     val id: String ="",
@@ -29,6 +30,7 @@ data class Coordinates(val lat: Double, val lng: Double)
 
 var souvenirs = listOf(
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🌅",
         title = "A mesmerizing sunrise at the beach. It was breathtaking!",
         date = "2024-03-15",
@@ -40,6 +42,7 @@ var souvenirs = listOf(
         description ="A stunning memory of a mesmerizing sunrise at the beach, where the golden hues of the sun painted the sky and reflected on the calm waves. The serene atmosphere and the beauty of nature made it a truly breathtaking moment to cherish forever."
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "📚",
         title = "Finally finished that amazing book! It left me inspired and take a lot of time " +
                 "to achieve it.",
@@ -53,6 +56,7 @@ var souvenirs = listOf(
     ),
 
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "✈️",
         title = "My first solo trip abroad. The adventure was unforgettable!",
         date = "2024-05-05",
@@ -65,6 +69,7 @@ var souvenirs = listOf(
     ),
 
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🍽️",
         title = "Tried a new recipe for dinner, and it turned out delicious!",
         date = "2024-04-18",
@@ -77,6 +82,7 @@ var souvenirs = listOf(
     ),
 
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🏆",
         title = "Won first place in the local coding challenge. What a day!",
         date = "2024-06-25",
@@ -89,6 +95,7 @@ var souvenirs = listOf(
     ),
 
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🌧️",
         title = "Rainy day vibes with tea and music. Felt calm and cozy.",
         date = "2024-07-12",
@@ -100,6 +107,7 @@ var souvenirs = listOf(
     ),
 
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "👩‍💻",
         title = "Spent the whole day coding and finally fixed that bug!",
         date = "2024-03-07",
@@ -111,6 +119,7 @@ var souvenirs = listOf(
     ),
 
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🎨",
         title = "Took some time to paint today. It felt so therapeutic!",
         date = "2024-08-01",
@@ -122,6 +131,7 @@ var souvenirs = listOf(
     ),
 
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🛠️",
         title = "Fixed the kitchen shelf all by myself. Feeling handy today!",
         date = "2024-09-14",
@@ -134,6 +144,7 @@ var souvenirs = listOf(
     ),
 
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🏡",
         title = "Had a great family gathering at home. Full of laughter!",
         date = "2024-11-10",
@@ -145,6 +156,7 @@ var souvenirs = listOf(
     ),
 
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🌌",
         title = "Stargazing night with friends. The sky was magical.",
         date = "2024-12-20",
@@ -155,6 +167,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🍕",
         title = "Pizza night with friends. Lots of laughs and good vibes.",
         date = "2024-08-15",
@@ -165,6 +178,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🌋",
         title = "Witnessed a volcanic eruption from a safe distance. What a thrill!",
         date = "2024-02-17",
@@ -175,6 +189,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🍂",
         title = "A walk in the woods during autumn. The leaves were stunning.",
         date = "2023-10-25",
@@ -185,6 +200,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "📚",
         title = "Spent an afternoon reading a captivating book at the park.",
         date = "2024-04-18",
@@ -195,6 +211,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "✈️",
         title = "First international trip! Exploring new cultures and cuisines.",
         date = "2024-05-05",
@@ -205,6 +222,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🎂",
         title = "A cozy birthday celebration with family and loved ones.",
         date = "2024-03-12",
@@ -215,6 +233,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🎶",
         title = "Attended a live concert of my favorite band. What a night!",
         date = "2024-07-21",
@@ -225,6 +244,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🏔️",
         title = "An adventurous hike to the mountain top. The view was incredible!",
         date = "2023-09-10",
@@ -236,6 +256,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🌧️",
         title = "Dancing in the rain with friends. It felt so refreshing!",
         date = "2023-06-02",
@@ -246,6 +267,7 @@ var souvenirs = listOf(
         images = listOf(),
     ),
     Souvenir(
+        id = UUID.randomUUID().toString(),
         emoji = "🌅",
         title = "A peaceful evening by the lake, watching the sunset.",
         date = "2023-10-15",
