@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.ifataliku.NavigationDestination
 import com.example.ifataliku.R
+import com.example.ifataliku.widgets.TimePickerWidget
 
 object StatPageDestination : NavigationDestination {
     override val route: String = "stats"

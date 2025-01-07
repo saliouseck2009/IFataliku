@@ -40,6 +40,7 @@ sealed interface SouvenirUIEvent {
     data class OnTitleChanged(val title: String) : SouvenirUIEvent
     data class OnDescriptionChanged(val description: String) : SouvenirUIEvent
     data class OnDateChanged(val date: String) : SouvenirUIEvent
+    data class OnTimeChanged(val time: String) : SouvenirUIEvent
     data object OnValidateNewSouvenir : SouvenirUIEvent
     data class OnLocationSelected(val lat: Double?, val lng: Double?) : SouvenirUIEvent
     data object OnFetchCurrentLocation : SouvenirUIEvent

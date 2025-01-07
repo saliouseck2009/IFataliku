@@ -3,6 +3,7 @@ package com.example.ifataliku.home.souvenirs
 import IFatalikuTheme
 import android.app.TimePickerDialog
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -48,6 +50,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -88,6 +91,7 @@ import com.example.ifataliku.widgets.DatePickerWidget
 import com.example.ifataliku.widgets.EmojiPicker
 import com.example.ifataliku.widgets.ImagePickerView
 import com.example.ifataliku.widgets.StaticMapView
+import com.example.ifataliku.widgets.TimePickerWidget
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.Calendar
@@ -171,6 +175,9 @@ fun AddSouvenirWidget(
                 selectedColor = souvenir.color.color,
                 onValueChange = {
                     onEvent(SouvenirUIEvent.OnDateChanged(it))
+                },
+                onTimePicked = {
+                    onEvent(SouvenirUIEvent.OnTimeChanged(it))
                 }
             )
             Row(
@@ -574,6 +581,7 @@ private fun EmojiPickerItem(
 private fun DatePickerSection(
     chosenDate: String,
     onValueChange: (String) -> Unit,
+    onTimePicked: (String) -> Unit,
     selectedColor: String,
     modifier: Modifier = Modifier
 ){
@@ -611,6 +619,8 @@ private fun DatePickerSection(
                         }
                 )
             }
+            Spacer(modifier = Modifier.width(16.dp))
+            TimePickerWidget(onTimePicked = onTimePicked)
         }
     }
 }

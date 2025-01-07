@@ -217,6 +217,13 @@ class SouvenirViewModel @Inject constructor(
                     initPageData()
                 }
             }
+            is SouvenirUIEvent.OnTimeChanged ->{
+                viewModelScope.launch {
+                    _souvenirStateData.value = _souvenirStateData.value.copy(
+                        souvenir = _souvenirStateData.value.souvenir.copy(time = event.time)
+                    )
+                }
+            }
         }
     }
     private fun isValidUrl(url: String): Boolean {
