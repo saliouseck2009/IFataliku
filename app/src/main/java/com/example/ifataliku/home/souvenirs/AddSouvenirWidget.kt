@@ -1,7 +1,6 @@
 package com.example.ifataliku.home.souvenirs
 
 import IFatalikuTheme
-import android.app.TimePickerDialog
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,8 +31,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,7 +65,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.LocationUtils
 import com.example.ifataliku.core.di.ObserveAsEvents
@@ -86,7 +82,6 @@ import com.example.ifataliku.widgets.StaticMapView
 import com.example.ifataliku.widgets.TimePickerWidget
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,7 +124,8 @@ fun AddSouvenirWidget(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(bottom = 16.dp)
+                .padding(//bottom = 16.dp,
+                    top = 32.dp)
                 .verticalScroll(rememberScrollState())
         ) {
 
@@ -263,45 +259,6 @@ private fun LinkSection(
             },
             modifier = Modifier
         )
-    }
-}
-
-@Composable
-fun TimePickerView(){
-
-    // Fetching local context
-    val mContext = LocalContext.current
-
-    // Declaring and initializing a calendar
-    val mCalendar = Calendar.getInstance()
-    val mHour = mCalendar[Calendar.HOUR_OF_DAY]
-    val mMinute = mCalendar[Calendar.MINUTE]
-
-    // Value for storing time as a string
-    val mTime = remember { mutableStateOf("") }
-
-    // Creating a TimePicker dialod
-    val mTimePickerDialog = TimePickerDialog(
-        mContext,
-        {_, mHour : Int, mMinute: Int ->
-            mTime.value = "$mHour:$mMinute"
-        }, mHour, mMinute, false
-    )
-
-    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-
-        // On button click, TimePicker is
-        // displayed, user can select a time
-        Button(onClick = { mTimePickerDialog.show() }, colors = ButtonDefaults.buttonColors(containerColor =
-        Color(0XFF0F9D58))) {
-            Text(text = "Open Time Picker", color = Color.White)
-        }
-
-        // Add a spacer of 100dp
-        Spacer(modifier = Modifier.size(100.dp))
-
-        // Display selected time
-        Text(text = "Selected Time: ${mTime.value}", fontSize = 30.sp)
     }
 }
 
@@ -443,9 +400,9 @@ fun GridItemSectionPreview() {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GridItemSection(
-    items: List<com.example.ifataliku.home.reflection.Category>,
+    items: List<Category>,
     selectedItem: String,
-    onValueChanged: (value: com.example.ifataliku.home.reflection.Category) -> Unit,
+    onValueChanged: (value: Category) -> Unit,
     modifier: Modifier = Modifier
 ){
     Column(modifier = modifier.fillMaxWidth()
@@ -660,8 +617,9 @@ private fun QuestionSection(
                 )
             }
             DefaultTextFieldView(value,
-                stringResource(R.string.title_for_your_memory), onValueChange,Modifier.padding(start
-            = 8.dp))
+              placeHolder =   stringResource(R.string.title_for_your_memory),
+                onValueChange = onValueChange,modifier = Modifier
+                    .padding(start = 8.dp))
 
 
         }
@@ -669,8 +627,9 @@ private fun QuestionSection(
 }
 
 @Composable
-private fun DefaultTextFieldView(value: String,placeHolder: String = "", onValueChange: (String) -> Unit, modifier:
-Modifier = Modifier) {
+private fun DefaultTextFieldView(value: String, modifier:
+Modifier = Modifier,placeHolder: String = "", onValueChange: (String)
+-> Unit, ) {
     OutlinedTextField(
         shape = RoundedCornerShape(8.dp),
         value = value,

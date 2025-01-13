@@ -1,13 +1,7 @@
 package com.example.ifataliku.home.souvenirs
 
 import IFatalikuTheme
-import android.content.Context
-import android.net.Uri
-import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ifataliku.NavigationDestination
 import com.example.ifataliku.R
-import com.example.ifataliku.core.di.LocationUtils.getImageLocation
 import com.example.ifataliku.core.di.ObserveAsEvents
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.domain.entities.souvenirs
@@ -208,7 +200,8 @@ private fun PageContent(
         ModalBottomSheet(
             onDismissRequest = { showBottomSheet = false },
             sheetState = sheetState,
-            containerColor = MaterialTheme.colorScheme.onPrimary,
+            scrimColor = MaterialTheme.colorScheme.onPrimary,
+            dragHandle = { false },
             modifier = Modifier.fillMaxHeight(0.97f),
         ) {
             Box(
