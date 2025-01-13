@@ -3,8 +3,6 @@ package com.example.ifataliku.home.souvenirs
 import IFatalikuTheme
 import android.app.TimePickerDialog
 import android.net.Uri
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
@@ -34,9 +32,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.InsertLink
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -50,7 +45,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -67,7 +61,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -76,7 +69,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.LocationUtils
 import com.example.ifataliku.core.di.ObserveAsEvents
@@ -171,14 +163,15 @@ fun AddSouvenirWidget(
             })
 
             DatePickerSection(
-                chosenDate = souvenir.date,
-                selectedColor = souvenir.color.color,
+                selectedDate = souvenir.date,
+                selectedColor = souvenir.color.color.asColor(),
                 onValueChange = {
                     onEvent(SouvenirUIEvent.OnDateChanged(it))
                 },
                 onTimePicked = {
                     onEvent(SouvenirUIEvent.OnTimeChanged(it))
-                }
+                },
+                selectedTime = souvenir.time
             )
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -579,12 +572,14 @@ private fun EmojiPickerItem(
 
 @Composable
 private fun DatePickerSection(
-    chosenDate: String,
+    selectedDate: String,
+    selectedTime: String?,
     onValueChange: (String) -> Unit,
     onTimePicked: (String) -> Unit,
-    selectedColor: String,
+    selectedColor: Color,
     modifier: Modifier = Modifier
 ){
+
     Card(
         shape = MaterialTheme.shapes.small,
         colors = CardDefaults.cardColors(
@@ -602,25 +597,29 @@ private fun DatePickerSection(
                 .fillMaxWidth()
         ) {
             Text(text = "Date", color= MaterialTheme.colorScheme.outline,)
-            DatePickerWidget(
-                value = chosenDate,
-                onValueChange = onValueChange,
-                pattern = "yyyy-MM-dd"
-            ) {
-                Text(
-                    text = Utils.getFormattedDate(chosenDate),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = Utils.getColorFromHexString(selectedColor),
-                    modifier = Modifier
-                        .clickable {
-                            it()
-                        }
-                )
+            Row {
+                DatePickerWidget(
+                    value = selectedDate,
+                    onValueChange = onValueChange,
+                    pattern = "yyyy-MM-dd"
+                ) {
+                    Text(
+                        text = Utils.getFormattedDate(selectedDate),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = selectedColor,
+                        modifier = Modifier
+                            .clickable {
+                                it()
+                            }
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                TimePickerWidget(onTimePicked = onTimePicked, selectedTime = selectedTime, color =
+                selectedColor)
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            TimePickerWidget(onTimePicked = onTimePicked)
+
         }
     }
 }

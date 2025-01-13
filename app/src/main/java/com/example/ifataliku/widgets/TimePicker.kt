@@ -3,6 +3,7 @@ package com.example.ifataliku.widgets
 
 import IFatalikuTheme
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -33,6 +34,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -42,13 +45,16 @@ import java.util.Calendar
 import java.util.Locale
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun TimePickerWidgetPreview(
     modifier: Modifier = Modifier
 ) {
     IFatalikuTheme {
-        TimePickerWidget(onTimePicked = {})
+        TimePickerWidget(onTimePicked = {}, color = Color.Black,
+            selectedTime = "00:00"
+        )
     }
 }
 
@@ -56,6 +62,8 @@ fun TimePickerWidgetPreview(
 @Composable
 fun TimePickerWidget(
     onTimePicked: (String) -> Unit,
+    selectedTime: String?,
+    color: Color,
     modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(true) }
@@ -63,33 +71,23 @@ fun TimePickerWidget(
 
     var showAdvancedExample by remember { mutableStateOf(false) }
 
-    var selectedTime: TimePickerState? by remember { mutableStateOf(
-        TimePickerState(0,0,true)
-    ) }
-
     val formatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-    val cal = Calendar.getInstance()
-    cal.set(Calendar.HOUR_OF_DAY, selectedTime!!.hour)
-    cal.set(Calendar.MINUTE, selectedTime!!.minute)
-    cal.isLenient = false
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
     ) {
         if (showMenu) {
-            Column(
+            Text(selectedTime?:"--:--",
+                color = color,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
                 modifier = Modifier
-                    .padding(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
+                            .clickable {
+                            showAdvancedExample = true
+                            showMenu = false
+                        })
 
-                TextButton(onClick = {
-                    showAdvancedExample = true
-                    showMenu = false
-                }) {
-                    Text(formatter.format(cal.time))
-                }
-            }
         }
         if(showAdvancedExample) {
             AdvancedTimePickerExample(
@@ -98,8 +96,8 @@ fun TimePickerWidget(
                     showMenu = true
                 },
                 onConfirm = { time ->
-                    selectedTime = time
-                    onTimePicked(formatter.format(selectedTime))
+                    val cal = getTimeFromTimePickerState(time)
+                    onTimePicked(formatter.format(cal.time))
                     showAdvancedExample = false
                     showMenu = true
                 },
@@ -107,6 +105,15 @@ fun TimePickerWidget(
         }
 
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun getTimeFromTimePickerState(pickerState: TimePickerState): Calendar {
+    val cal = Calendar.getInstance()
+    cal.set(Calendar.HOUR_OF_DAY, pickerState.hour)
+    cal.set(Calendar.MINUTE, pickerState.minute)
+    cal.isLenient = false
+    return cal
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

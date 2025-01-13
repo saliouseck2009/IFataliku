@@ -11,7 +11,7 @@ data class Souvenir(
     val emoji: String,
     val title: String,
     val date: String,
-    val time: String,
+    val time: String?,
     val description: String? = "",
     val category: Category,
     val color: LabelledColor,

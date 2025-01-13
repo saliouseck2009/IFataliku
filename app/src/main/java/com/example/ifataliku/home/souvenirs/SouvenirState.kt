@@ -107,7 +107,7 @@ class AppData {
             title = "",
             description = "",
             date = LocalDate.now().toString(),
-            time = "",
+            time = null,
             category = Category("📖", "Education"),
             color = colorItems.first(),
             feeling = Category("🙂", "Good"),
