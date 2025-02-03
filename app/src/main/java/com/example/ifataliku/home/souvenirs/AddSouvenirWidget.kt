@@ -1,8 +1,11 @@
 package com.example.ifataliku.home.souvenirs
 
 import IFatalikuTheme
+import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -70,8 +73,9 @@ import com.example.ifataliku.core.di.LocationUtils
 import com.example.ifataliku.core.di.ObserveAsEvents
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.core.di.asColor
-import com.example.ifataliku.domain.entities.Souvenir
-import com.example.ifataliku.domain.entities.souvenirs
+import com.example.ifataliku.data.datasource.LabelledColor
+import com.example.ifataliku.data.datasource.local.entities.Souvenir
+import com.example.ifataliku.data.datasource.local.entities.souvenirs
 import com.example.ifataliku.home.reflection.Category
 import com.example.ifataliku.widgets.CircularIconView
 import com.example.ifataliku.widgets.ColorItemWidget
@@ -97,6 +101,7 @@ fun AddSouvenirWidget(
     val context = LocalContext.current
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableIntStateOf(0) }
+    var isEditMode by remember { mutableStateOf( souvenir.id.isNotBlank()) }
     ObserveAsEvents(flow = viewModelEvent) { event ->
         when (event) {
             is AddSouvenirViewModelEvent.RetrieveImageLocation -> {
@@ -125,23 +130,40 @@ fun AddSouvenirWidget(
             modifier = modifier
                 .fillMaxSize()
                 .padding(//bottom = 16.dp,
-                    top = 32.dp)
+                    top = 32.dp
+                )
                 .verticalScroll(rememberScrollState())
         ) {
 
             var selectedImageUris by remember {
-                mutableStateOf<List<Uri>>(emptyList())
+                mutableStateOf<List<Uri>>(souvenir.images.map { Uri.parse(it) })
             }
 
             val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
-               // contract = ActivityResultContracts.PickMultipleVisualMedia(6),
-                contract = ActivityResultContracts.GetMultipleContents(),
+               contract = ActivityResultContracts.PickMultipleVisualMedia(6),
+               // contract = ActivityResultContracts.GetMultipleContents(),
                 onResult = { uris ->
-                    onEvent(SouvenirUIEvent.OnImageSelected(uris))
-                    selectedImageUris = uris
+                    //selectedImageUris = uris
+                    val allSelection = (selectedImageUris + uris).distinct()
+
+                    /*This method requests persistent access to a specific Uri. By default,
+                     when you select a file using a document picker,the access is temporary—it lasts
+                      only until the app is in memory. Using takePersistableUriPermission ensures
+                      the app can continue accessing the file even after a reboot or app restart.
+                     */
+                  //  uris.forEach { uri ->
+                    allSelection.forEach { uri ->
+                        context.contentResolver.takePersistableUriPermission(
+                            uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                    }
+                    selectedImageUris = allSelection
+                    onEvent(SouvenirUIEvent.OnImageSelected(allSelection))
+//                    onEvent(SouvenirUIEvent.OnImageSelected(uris))
+
                 }
             )
-            Header(onClose = onClose, onSave = onSave)
+            Header(onClose = onClose, onSave = onSave, isEditMode= isEditMode)
             QuestionSection(
                 emoji = souvenir.emoji,
                 value = souvenir.title,
@@ -217,13 +239,16 @@ fun AddSouvenirWidget(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 pickPhotos = {
                     multiplePhotoPickerLauncher
-                        .launch("image/*")
-//                        .launch(
-//                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-//                    )
+                        .launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
                 },
                 images = selectedImageUris,
-                color = souvenir.color.color.asColor()
+                color = souvenir.color.color.asColor(),
+                onClickItem = { uri ->
+                    selectedImageUris = selectedImageUris - uri
+                    onEvent(SouvenirUIEvent.OnImageSelected(selectedImageUris))
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             StaticMapView(
@@ -334,7 +359,7 @@ fun IconButtonView(
         }
     }
 }
-data class LabelledColor(val label: String, val color: String)
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -653,6 +678,7 @@ Modifier = Modifier,placeHolder: String = "", onValueChange: (String)
 private fun Header(
     onClose: () -> Unit,
     onSave: () -> Unit,
+    isEditMode: Boolean,
     modifier: Modifier = Modifier
 ){
     Row(
@@ -663,8 +689,12 @@ private fun Header(
             .fillMaxWidth(),
     ){
         CircularIconView(onClose)
-        Text(text = stringResource(R.string.nouveau_souvenir),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),)
+        Text(
+            text = if (isEditMode.not()) stringResource(R.string.nouveau_souvenir) else stringResource(
+                R.string.modifier
+            ),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+        )
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -675,7 +705,9 @@ private fun Header(
                 )
                 .clickable(onClick = onSave)
         ) {
-            Text(text = stringResource(R.string.ajouter),
+            Text(text = if (isEditMode.not()) stringResource(R.string.ajouter) else stringResource(
+                R.string.modifier
+            ),
                 color = MaterialTheme.colorScheme.outline,
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(8.dp))
@@ -689,7 +721,7 @@ private fun Header(
 @Composable
 fun BottomPagerView(
     modifier: Modifier = Modifier,
-    souvenir: Souvenir ,
+    souvenir: Souvenir,
     selectedTab: Int = 0,
     onEvent: (SouvenirUIEvent) -> Unit,
 ){

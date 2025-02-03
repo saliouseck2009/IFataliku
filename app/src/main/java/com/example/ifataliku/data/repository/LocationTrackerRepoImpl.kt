@@ -40,17 +40,17 @@ class LocationTrackerRepoImpl(
             fusedLocationProviderClient.lastLocation.apply {
                 if (isComplete) {
                     if (isSuccessful) {
-                        cont.resume(result) {} // Resume coroutine with location result
+                        cont.resume(result) { cause, _, _ -> } // Resume coroutine with location result
                     } else {
-                        cont.resume(null) {} // Resume coroutine with null location result
+                        cont.resume(null) { cause, _, _ -> } // Resume coroutine with null location result
                     }
                     return@suspendCancellableCoroutine
                 }
                 addOnSuccessListener {
-                    cont.resume(it) {}  // Resume coroutine with location result
+                    cont.resume(it) { cause, _, _ -> }  // Resume coroutine with location result
                 }
                 addOnFailureListener {
-                    cont.resume(null) {} // Resume coroutine with null location result
+                    cont.resume(null) { cause, _, _ -> } // Resume coroutine with null location result
                 }
                 addOnCanceledListener {
                     cont.cancel() // Cancel the coroutine

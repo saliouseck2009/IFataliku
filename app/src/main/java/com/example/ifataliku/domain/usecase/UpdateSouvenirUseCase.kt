@@ -1,6 +1,6 @@
 package com.example.ifataliku.domain.usecase
 
-import com.example.ifataliku.domain.entities.Souvenir
+import com.example.ifataliku.data.datasource.local.entities.Souvenir
 import com.example.ifataliku.domain.repository.SouvenirRepo
 import javax.inject.Inject
 

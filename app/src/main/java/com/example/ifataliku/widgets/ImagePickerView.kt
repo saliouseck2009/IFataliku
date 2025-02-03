@@ -37,7 +37,8 @@ fun ImagePickerView(
     modifier: Modifier = Modifier,
     pickPhotos: () -> Unit,
     images: List<Uri>,
-    color: Color
+    color: Color,
+    onClickItem: (Uri) -> Unit
 ) {
     Card(modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -56,7 +57,10 @@ fun ImagePickerView(
                     ImageConfig(10, 10, 15),
                     ImageConfig(10, 70, -15),
                     ImageConfig(70, 45, 10)
-                )
+                ),
+                onClickItem = { uri ->
+                    if(uri != null) onClickItem(uri)
+                }
                 )
             IconTitledPicker(
                 color,
@@ -69,7 +73,10 @@ fun ImagePickerView(
                     ImageConfig(10, 10, 15),
                     ImageConfig(30, 70, -15),
                     ImageConfig(70, 25, 10)
-                )
+                ),
+                onClickItem = { uri ->
+                    if(uri != null) onClickItem(uri)
+                }
             )
         }
     }
@@ -107,7 +114,7 @@ fun IconTitledPicker(color: Color, onClick: () -> Unit, icon: ImageVector, title
 
 @Composable
 fun ImageDisplayView(modifier: Modifier = Modifier, images: List<Uri> = emptyList(),
-                     imageConfigs: List<ImageConfig> ) {
+                     imageConfigs: List<ImageConfig>, onClickItem: (Uri?) -> Unit ) {
     Card(modifier = modifier
         .size(150.dp),
         colors = CardDefaults.cardColors(
@@ -120,6 +127,9 @@ fun ImageDisplayView(modifier: Modifier = Modifier, images: List<Uri> = emptyLis
         ) {
             imageConfigs.forEachIndexed { index, imageConfig ->
                 Card(
+                    onClick = {
+                        onClickItem(images.getOrNull(index) )
+                    },
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                     ),
@@ -157,7 +167,8 @@ fun ImagePickerViewPreview() {
         ImagePickerView(
             pickPhotos = {},
             color = Color.Green,
-            images = emptyList()
+            images = emptyList(),
+            onClickItem = {}
         )
     }
 }
@@ -168,7 +179,8 @@ fun ImageDisplayViewPreview() {
         ImagePickerView(
             pickPhotos = {},
             color = Color.Green,
-            images = emptyList()
+            images = emptyList(),
+            onClickItem = {}
         )
     }
 }

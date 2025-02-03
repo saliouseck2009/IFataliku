@@ -1,13 +1,20 @@
-package com.example.ifataliku.domain.entities
+package com.example.ifataliku.data.datasource.local.entities
 
 import android.net.Uri
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
+import com.example.ifataliku.data.datasource.LabelledColor
 import com.example.ifataliku.home.reflection.Category
 import com.example.ifataliku.home.souvenirs.AppData
-import com.example.ifataliku.home.souvenirs.LabelledColor
+import com.google.gson.Gson
 import java.util.UUID
 
+@Entity(tableName = "souvenirs",indices = [Index(value = ["id"], unique = true)])
 data class Souvenir(
-    val id: String ="",
+    @PrimaryKey
+    val id: String,
     val emoji: String,
     val title: String,
     val date: String,
@@ -16,15 +23,31 @@ data class Souvenir(
     val category: Category,
     val color: LabelledColor,
     val feeling: Category,
-    val images: List<Uri>,
+    val images: List<String>,
     val isFavorite: Boolean = false,
-   // val link: String? ="", // "https://news.google.com/",
     val link: String? =  "https://news.google.com/",
     val position: Coordinates? = null,
-    val attachments: List<String> = emptyList()
 )
 
 data class Coordinates(val lat: Double, val lng: Double)
+class CoordinateConverter {
+    private val gson = Gson()
+
+    @TypeConverter
+    fun fromCoordinates(coordinate: Coordinates?): String {
+        return gson.toJson(coordinate)
+    }
+
+    @TypeConverter
+    fun toCoordinates(value: String): Coordinates? {
+        return try {
+            gson.fromJson(value, Coordinates::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
+}
+
 
 
 

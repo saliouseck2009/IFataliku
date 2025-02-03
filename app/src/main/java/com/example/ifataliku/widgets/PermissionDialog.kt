@@ -68,9 +68,7 @@ fun PermissionDialog(
         content = {
             Surface {
 
-            Column(
-
-            ) {
+            Column {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {

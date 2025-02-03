@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.core.di.asColor
-import com.example.ifataliku.domain.entities.Souvenir
-import com.example.ifataliku.domain.entities.souvenirs
+import com.example.ifataliku.data.datasource.local.entities.Souvenir
+import com.example.ifataliku.data.datasource.local.entities.souvenirs
 import com.example.ifataliku.home.reflection.Category
 import com.example.ifataliku.home.reflection.EmojiCard
 import com.example.ifataliku.home.reflection.TimeLineComposable
@@ -154,7 +154,7 @@ fun SouvenirItemViewPreview() {
 fun SouvenirListItemView(
     dateTitle: String,
     items: List<Souvenir>,
-    onItemClick: (Souvenir) -> Unit ,
+    onItemClick: (Souvenir) -> Unit,
     modifier : Modifier = Modifier) {
     Column(modifier = modifier){
         Row(

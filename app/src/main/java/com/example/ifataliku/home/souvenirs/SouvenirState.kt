@@ -2,7 +2,8 @@ package com.example.ifataliku.home.souvenirs
 
 import android.net.Uri
 import com.example.ifataliku.core.di.UiText
-import com.example.ifataliku.domain.entities.Souvenir
+import com.example.ifataliku.data.datasource.LabelledColor
+import com.example.ifataliku.data.datasource.local.entities.Souvenir
 import com.example.ifataliku.home.reflection.Category
 import java.time.LocalDate
 
@@ -15,7 +16,7 @@ sealed interface SouvenirState {
 data class SouvenirStateData(
     val souvenirsMap:  Map<String, List<Souvenir>>,
     val souvenirs: List<Souvenir>,
-    val souvenir: Souvenir= AppData.initialSouvenir,
+    val souvenir: Souvenir = AppData.initialSouvenir,
 )
 
 sealed interface SouvenirViewModelEvent {
@@ -48,6 +49,7 @@ sealed interface SouvenirUIEvent {
     data class OnToggleFavourite(val souvenir: Souvenir) : SouvenirUIEvent
     data class OnDeleteSouvenir(val souvenir: Souvenir) : SouvenirUIEvent
     data class OnEditSouvenir(val souvenir: Souvenir) : SouvenirUIEvent
+    data class OnDeletedImage(val souvenir: Souvenir,val images: List<String>): SouvenirUIEvent
 
 }
 
@@ -103,6 +105,7 @@ class AppData {
             Category("😄", "Awesome"),
         )
         val initialSouvenir = Souvenir(
+            id = "",
             emoji = "🎉",
             title = "",
             description = "",

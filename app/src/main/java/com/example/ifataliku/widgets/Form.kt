@@ -60,9 +60,7 @@ fun CustomDropDownMenu(
                 .padding(horizontal = 8.dp, vertical = 16.dp)
         ) {
             Text(text = title, style = TextStyle(fontWeight = FontWeight.Bold))
-            if (!expanded) Row(
-
-            ) {
+            if (!expanded) Row {
                 Text(text = currentValue)
                 Spacer(modifier = Modifier.width(16.dp))
                 Icon(
