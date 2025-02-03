@@ -1,9 +1,9 @@
 package com.example.ifataliku.home.souvenir_detail
 
 import IFatalikuTheme
+import android.content.ContentResolver
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,18 +28,16 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.HideImage
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.filled.NoPhotography
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,12 +50,12 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,8 +64,8 @@ import coil3.compose.AsyncImage
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.Utils
 import com.example.ifataliku.core.di.asColor
-import com.example.ifataliku.domain.entities.Souvenir
-import com.example.ifataliku.domain.entities.souvenirs
+import com.example.ifataliku.data.datasource.local.entities.Souvenir
+import com.example.ifataliku.data.datasource.local.entities.souvenirs
 import com.example.ifataliku.home.reflection.EmojiCard
 import com.example.ifataliku.home.souvenirs.SouvenirUIEvent
 import com.example.ifataliku.widgets.CircularIconView
@@ -134,8 +132,18 @@ fun SouvenirDetail(souvenir: Souvenir,
             )
         }
     }
+    val context = LocalContext.current
     val isDropDownExpanded = remember {
         mutableStateOf(false)
+    }
+    LaunchedEffect(souvenir.images) {
+        val uriToDelete = mutableListOf<String>()
+        souvenir.images.forEach { uri ->
+            if (isUriAvailable(Uri.parse(uri), context.contentResolver).not()) {
+                uriToDelete.add(uri)
+            }
+        }
+        if(uriToDelete.isNotEmpty()) onEvent(SouvenirUIEvent.OnDeletedImage(souvenir, uriToDelete))
     }
     Surface(
         modifier = Modifier
@@ -282,7 +290,7 @@ fun SouvenirDetail(souvenir: Souvenir,
             }
             if(souvenir.images.isNotEmpty()){
                 ImagePreviewSection(
-                    imageUris = souvenir.images,
+                    imageUris = souvenir.images.map { Uri.parse(it) },
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -296,6 +304,7 @@ fun ImagePreviewSection(
     modifier: Modifier = Modifier,
     imageUris: List<Uri>,
 ) {
+    val context = LocalContext.current
     Column {
 
         Row(
@@ -307,15 +316,33 @@ fun ImagePreviewSection(
         ) {
             imageUris.forEach { uri ->
                 Card{
-                    AsyncImage(
-                        model = uri,
-                        contentDescription = null,
-                        modifier = Modifier.size(150.dp, 150.dp),
-                        contentScale = ContentScale.Crop,
-                    )
+                    if (isUriAvailable(uri, context.contentResolver)) {
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = "",
+                            modifier = Modifier.size(150.dp, 150.dp),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }else{
+
+                        Box(contentAlignment = Alignment.Center,
+                            modifier = Modifier.size(150.dp, 150.dp)){
+                            Icon(imageVector = Icons.Default.HideImage, contentDescription =
+                            "image", modifier = Modifier.fillMaxSize().padding(32.dp))
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+fun isUriAvailable(uri: Uri, contentResolver: ContentResolver): Boolean {
+    return try {
+        contentResolver.openInputStream(uri)?.close()
+        true
+    } catch (e: Exception) {
+        false
     }
 }
 

@@ -1,22 +1,20 @@
 package com.example.ifataliku.data.repository
 
-import com.example.ifataliku.data.datasource.SouvenirMemoryDataSource
-import com.example.ifataliku.domain.entities.Souvenir
-import com.example.ifataliku.domain.entities.souvenirs
+import com.example.ifataliku.data.datasource.local.SouvenirLocalDataSource
+import com.example.ifataliku.data.datasource.local.entities.Souvenir
 import com.example.ifataliku.domain.repository.SouvenirRepo
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 import javax.inject.Inject
 
-//private val souvenirList = emptyList<Souvenir>().toMutableList()
 class SouvenirRepoImpl @Inject constructor(
-    private var souvenirMemoryDataSource: SouvenirMemoryDataSource
+    private var localDataSource: SouvenirLocalDataSource
 ) : SouvenirRepo {
-    // souvenirs.toMutableList()
 
     override suspend fun createSouvenir(souvenir: Souvenir): Boolean {
         return try {
             val newSouvenir = souvenir.copy(id = UUID.randomUUID().toString())
-            souvenirMemoryDataSource.addSouvenir(newSouvenir)
+            localDataSource.addSouvenir(newSouvenir)
             true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -24,24 +22,24 @@ class SouvenirRepoImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSouvenirById(id: String): Souvenir? {
-        return souvenirMemoryDataSource.getSouvenirById(id)
+    override  fun getSouvenirById(id: String): Flow<Souvenir?> {
+        return localDataSource.getSouvenirById(id)
     }
 
-    override suspend fun getAllSouvenirs(): List<Souvenir> {
-        return souvenirMemoryDataSource.getAllSouvenirs()
+    override  fun getAllSouvenirs(): Flow<List<Souvenir>> {
+        return localDataSource.getAllSouvenirs()
     }
 
     override suspend fun updateSouvenir(souvenir: Souvenir): Boolean {
-        return souvenirMemoryDataSource.updateSouvenir(souvenir)
+        return localDataSource.updateSouvenir(souvenir) >= 1
     }
 
     override suspend fun deleteSouvenirById(id: String): Boolean {
-        return souvenirMemoryDataSource.deleteSouvenirById(id)
+        return localDataSource.deleteSouvenirById(id) >= 1
 
     }
 
     override suspend fun deleteAllSouvenirs(): Boolean {
-        return souvenirMemoryDataSource.clearAllSouvenirs()
+        return localDataSource.clearAllSouvenirs() >= 1
     }
 }

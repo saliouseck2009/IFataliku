@@ -45,7 +45,7 @@ import com.example.ifataliku.NavigationDestination
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.ObserveAsEvents
 import com.example.ifataliku.core.di.Utils
-import com.example.ifataliku.domain.entities.souvenirs
+import com.example.ifataliku.data.datasource.local.entities.souvenirs
 import com.example.ifataliku.home.souvenir_detail.SouvenirDetailSheet
 import com.example.ifataliku.widgets.ErrorWidget
 import com.example.ifataliku.widgets.LoadingPage

@@ -1,25 +1,20 @@
 package com.example.ifataliku.home.souvenirs
 
-import android.util.Patterns
 import android.webkit.URLUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ifataliku.R
 import com.example.ifataliku.core.di.UiText
-import com.example.ifataliku.domain.entities.Coordinates
-import com.example.ifataliku.domain.entities.Souvenir
+import com.example.ifataliku.data.datasource.local.entities.Coordinates
 import com.example.ifataliku.domain.repository.LocationTrackerRepo
 import com.example.ifataliku.domain.usecase.GetAllSouvenirsUseCase
 import com.example.ifataliku.domain.usecase.SouvenirUseCase
-import com.example.ifataliku.home.reflection.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -99,7 +94,8 @@ class SouvenirViewModel @Inject constructor(
             is SouvenirUIEvent.OnImageSelected -> {
                 viewModelScope.launch {
                     _souvenirStateData.value = _souvenirStateData.value.copy(
-                        souvenir = _souvenirStateData.value.souvenir.copy(images = event.images)
+                        souvenir = _souvenirStateData.value.souvenir.copy(images = event.images
+                            .map { it.toString() })
                     )
                     if (event.images.isNotEmpty()) {
                         _addSouvenirViewModelEvent.send(
@@ -222,6 +218,18 @@ class SouvenirViewModel @Inject constructor(
                     _souvenirStateData.value = _souvenirStateData.value.copy(
                         souvenir = _souvenirStateData.value.souvenir.copy(time = event.time)
                     )
+                }
+            }
+
+            is SouvenirUIEvent.OnDeletedImage -> {
+                viewModelScope.launch {
+                    val images =  event.souvenir.images
+                        .filterNot { it in event.images }
+                    _souvenirStateData.value = _souvenirStateData.value.copy(
+                        souvenir = _souvenirStateData.value.souvenir.copy(images = images)
+                    )
+                    souvenirUseCase.updateSouvenir(event.souvenir.copy(images = images))
+                    initPageData()
                 }
             }
         }

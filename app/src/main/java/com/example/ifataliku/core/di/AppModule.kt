@@ -2,7 +2,11 @@ package com.example.ifataliku.core.di
 
 import android.app.Application
 import android.content.Context
-import com.example.ifataliku.data.datasource.SouvenirMemoryDataSource
+import androidx.room.Room
+import com.example.ifataliku.data.datasource.local.AppDatabase
+import com.example.ifataliku.data.datasource.local.SouvenirInMemoryDataSource
+import com.example.ifataliku.data.datasource.local.SouvenirLocalDataSource
+import com.example.ifataliku.data.datasource.local.dao.SouvenirDao
 import com.example.ifataliku.data.repository.LocationTrackerRepoImpl
 import com.example.ifataliku.data.repository.SouvenirRepoImpl
 import com.example.ifataliku.domain.repository.LocationTrackerRepo
@@ -14,6 +18,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -24,6 +29,35 @@ object AppModule {
     @Provides
     fun provideContext(app: Application): Context {
         return app.applicationContext
+    }
+
+    @Provides
+    @Singleton
+    fun provideJson(): Json {
+        return Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+            encodeDefaults = true
+        }
+    }
+
+    @Singleton
+    @Provides
+    fun provideRoomDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room
+            .databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                "room_database"
+            )
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideSouvenirDao(db: AppDatabase): SouvenirDao {
+        return db.souvenirDao()
     }
 
     @Provides
@@ -43,14 +77,10 @@ object AppModule {
     )
     @Singleton
     @Provides
-    fun provideSouvenirRepo(souvenirMemoryDataSource: SouvenirMemoryDataSource): SouvenirRepo {
-        return SouvenirRepoImpl(souvenirMemoryDataSource)
+    fun provideSouvenirRepo(dataSource: SouvenirLocalDataSource): SouvenirRepo {
+        return SouvenirRepoImpl(dataSource)
     }
-    @Singleton
-    @Provides
-    fun provideSouvenirMemoryDataSource(): SouvenirMemoryDataSource {
-        return SouvenirMemoryDataSource()
-    }
+
 
 
 

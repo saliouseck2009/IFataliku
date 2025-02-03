@@ -4,7 +4,7 @@ import android.content.Context
 import android.media.ExifInterface
 import android.net.Uri
 import androidx.compose.ui.graphics.Color
-import com.example.ifataliku.domain.entities.Souvenir
+import com.example.ifataliku.data.datasource.local.entities.Souvenir
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
